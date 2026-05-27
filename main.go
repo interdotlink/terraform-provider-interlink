@@ -11,7 +11,7 @@ import (
 
 func main() {
 	opts := providerserver.ServeOpts{
-		Address: "inter.link/tech/interlink",
+		Address: "registry.terraform.io/interdotlink/interlink",
 	}
 
 	if err := providerserver.Serve(context.Background(), provider.New, opts); err != nil {
