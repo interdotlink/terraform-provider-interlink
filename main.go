@@ -1,20 +1,20 @@
 package main
 
 import (
-    "context"
-    "log"
+	"context"
+	"log"
 
-    "github.com/hashicorp/terraform-plugin-framework/providerserver"
-    provider "terraform-provider-interlink/provider"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+
+	"terraform-provider-interlink/internal/provider"
 )
 
 func main() {
-    opts := providerserver.ServeOpts{
-        Address: "inter.link/tech/interlink",
-    }
+	opts := providerserver.ServeOpts{
+		Address: "registry.terraform.io/interdotlink/interlink",
+	}
 
-    err := providerserver.Serve(context.Background(), provider.New(), opts)
-    if err != nil {
-        log.Fatal(err.Error())
-    }
+	if err := providerserver.Serve(context.Background(), provider.New, opts); err != nil {
+		log.Fatal(err.Error())
+	}
 }

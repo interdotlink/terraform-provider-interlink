@@ -1,0 +1,22 @@
+local/
+
+# Go test binaries
+*.test
+
+# Go Releaser output
+dist/
+
+# Terraform files
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# macOS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
