@@ -75,5 +75,7 @@ func (p *interlinkProvider) Resources(ctx context.Context) []func() resource.Res
 }
 
 func (p *interlinkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return nil
+	return []func() datasource.DataSource{
+		NewStatusDataSource,
+	}
 }
