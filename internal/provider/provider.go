@@ -113,5 +113,7 @@ func (p *interlinkProvider) DataSources(ctx context.Context) []func() datasource
 		NewIpServicesDataSource,
 		NewDdosServicesDataSource,
 		NewPortServicesDataSource,
+		NewElanServicesDataSource,
+		NewFlexpeerServicesDataSource,
 	}
 }

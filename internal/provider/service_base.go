@@ -48,6 +48,41 @@ func baseServiceAttributes() map[string]schema.Attribute {
 	}
 }
 
+// serviceComponentModel is a curated view of one service component; every
+// component subtype shares the ServiceComponent base envelope, so
+// AsServiceComponent decodes any of them.
+type serviceComponentModel struct {
+	ComponentType types.String `tfsdk:"component_type"`
+	Name          types.String `tfsdk:"name"`
+	ResponseType  types.String `tfsdk:"response_type"`
+	Price         types.String `tfsdk:"price"`
+}
+
+// componentsAttribute returns the schema for a curated components list.
+func componentsAttribute() schema.ListNestedAttribute {
+	return schema.ListNestedAttribute{
+		Computed: true,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"component_type": schema.StringAttribute{Computed: true},
+				"name":           schema.StringAttribute{Computed: true},
+				"response_type":  schema.StringAttribute{Computed: true},
+				"price":          schema.StringAttribute{Computed: true},
+			},
+		},
+	}
+}
+
+// mapServiceComponent maps a decoded base ServiceComponent into the curated model.
+func mapServiceComponent(c portal.ServiceComponent) serviceComponentModel {
+	return serviceComponentModel{
+		ComponentType: types.StringValue(c.ComponentType),
+		Name:          types.StringValue(c.Name),
+		ResponseType:  types.StringValue(string(c.ResponseType)),
+		Price:         types.StringValue(c.Price.Display),
+	}
+}
+
 // mapBaseService maps a decoded base Service into the shared model.
 func mapBaseService(s portal.Service) serviceBaseModel {
 	return serviceBaseModel{
