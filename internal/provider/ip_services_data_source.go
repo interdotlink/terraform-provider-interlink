@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -30,20 +29,7 @@ type ipServicesDataSourceModel struct {
 }
 
 type ipServiceModel struct {
-	// Base fields, shared with interlink_services.
-	Id           types.Int64  `tfsdk:"id"`
-	Sid          types.String `tfsdk:"sid"`
-	Name         types.String `tfsdk:"name"`
-	ResponseType types.String `tfsdk:"response_type"`
-	Status       types.String `tfsdk:"status"`
-	Product      types.String `tfsdk:"product"`
-	Location     types.String `tfsdk:"location"`
-	ServiceSpeed types.Int64  `tfsdk:"service_speed"`
-	Term         types.Int64  `tfsdk:"term"`
-	Mrc          types.String `tfsdk:"mrc"`
-	CreatedDate  types.String `tfsdk:"created_date"`
-	CustomerGid  types.String `tfsdk:"customer_gid"`
-	Description  types.String `tfsdk:"description"`
+	serviceBaseModel
 
 	// IP-family extras.
 	Port     types.String `tfsdk:"port"`
@@ -63,32 +49,20 @@ func (d *ipServicesDataSource) Metadata(ctx context.Context, req datasource.Meta
 }
 
 func (d *ipServicesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	attrs := baseServiceAttributes()
+	attrs["port"] = schema.StringAttribute{Computed: true}
+	attrs["vlan_id"] = schema.Int64Attribute{Computed: true}
+	attrs["prefix_v4"] = schema.StringAttribute{Computed: true}
+	attrs["prefix_v6"] = schema.StringAttribute{Computed: true}
+	attrs["bgp_v4_asn"] = schema.Int64Attribute{Computed: true}
+	attrs["bgp_v6_asn"] = schema.Int64Attribute{Computed: true}
+
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"services": schema.ListNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"id":            schema.Int64Attribute{Computed: true},
-						"sid":           schema.StringAttribute{Computed: true},
-						"name":          schema.StringAttribute{Computed: true},
-						"response_type": schema.StringAttribute{Computed: true},
-						"status":        schema.StringAttribute{Computed: true},
-						"product":       schema.StringAttribute{Computed: true},
-						"location":      schema.StringAttribute{Computed: true},
-						"service_speed": schema.Int64Attribute{Computed: true},
-						"term":          schema.Int64Attribute{Computed: true},
-						"mrc":           schema.StringAttribute{Computed: true},
-						"created_date":  schema.StringAttribute{Computed: true},
-						"customer_gid":  schema.StringAttribute{Computed: true},
-						"description":   schema.StringAttribute{Computed: true},
-						"port":          schema.StringAttribute{Computed: true},
-						"vlan_id":       schema.Int64Attribute{Computed: true},
-						"prefix_v4":     schema.StringAttribute{Computed: true},
-						"prefix_v6":     schema.StringAttribute{Computed: true},
-						"bgp_v4_asn":    schema.Int64Attribute{Computed: true},
-						"bgp_v6_asn":    schema.Int64Attribute{Computed: true},
-					},
+					Attributes: attrs,
 				},
 			},
 		},
@@ -137,6 +111,12 @@ func (d *ipServicesDataSource) Read(ctx context.Context, req datasource.ReadRequ
 			continue
 		}
 
+		// Base fields shared with interlink_services; extras from the IP schema.
+		base, err := item.AsService()
+		if err != nil {
+			resp.Diagnostics.AddError("Unable to decode Inter.link service", err.Error())
+			return
+		}
 		s, err := item.AsIPTransit()
 		if err != nil {
 			resp.Diagnostics.AddError("Unable to decode Inter.link IP service", err.Error())
@@ -170,25 +150,13 @@ func (d *ipServicesDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		}
 
 		state.Services = append(state.Services, ipServiceModel{
-			Id:           optionalInt(s.Id),
-			Sid:          optionalString(s.Sid),
-			Name:         types.StringValue(s.Name),
-			ResponseType: types.StringValue(string(s.ResponseType)),
-			Status:       types.StringValue(string(s.Status)),
-			Product:      types.StringValue(s.Product.Name),
-			Location:     types.StringValue(s.Location.Name),
-			ServiceSpeed: optionalInt(s.ServiceSpeed),
-			Term:         types.Int64Value(int64(s.Term)),
-			Mrc:          types.StringValue(s.Mrc.Display),
-			CreatedDate:  types.StringValue(s.CreatedDate.Format(time.RFC3339)),
-			CustomerGid:  types.StringValue(s.CustomerGid),
-			Description:  optionalString(s.Description),
-			Port:         port,
-			VlanId:       vlanId,
-			PrefixV4:     prefixV4,
-			PrefixV6:     prefixV6,
-			BgpV4Asn:     bgpV4Asn,
-			BgpV6Asn:     bgpV6Asn,
+			serviceBaseModel: mapBaseService(base),
+			Port:             port,
+			VlanId:           vlanId,
+			PrefixV4:         prefixV4,
+			PrefixV6:         prefixV6,
+			BgpV4Asn:         bgpV4Asn,
+			BgpV6Asn:         bgpV6Asn,
 		})
 	}
 
