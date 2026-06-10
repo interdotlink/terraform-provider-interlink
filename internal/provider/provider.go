@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -49,12 +50,40 @@ func (p *interlinkProvider) Configure(ctx context.Context, req provider.Configur
 		return
 	}
 
+	if config.ApiKey.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("api_key"),
+			"Unknown Inter.link API key",
+			"api_key is not yet known at this point of the plan. "+
+				"Use a static value, a variable, or a value known before apply.",
+		)
+	}
+	if config.ApiUrl.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("api_url"),
+			"Unknown Inter.link API URL",
+			"api_url is not yet known at this point of the plan. "+
+				"Use a static value, a variable, or a value known before apply.",
+		)
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	baseURL := "https://portal.inter.link"
 	if !config.ApiUrl.IsNull() {
 		baseURL = config.ApiUrl.ValueString()
 	}
 
 	apiKey := config.ApiKey.ValueString()
+	if apiKey == "" {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("api_key"),
+			"Missing Inter.link API key",
+			"api_key is empty. Provide the API key from the Inter.link portal.",
+		)
+		return
+	}
 	withAPIKey := portal.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
 		req.Header.Set("X-API-Key", apiKey)
 		return nil
