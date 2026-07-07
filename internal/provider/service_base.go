@@ -32,19 +32,19 @@ type serviceBaseModel struct {
 // attributes. Per-family data sources merge their own extras into it.
 func baseServiceAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"id":            schema.Int64Attribute{Computed: true},
-		"sid":           schema.StringAttribute{Computed: true},
-		"name":          schema.StringAttribute{Computed: true},
-		"response_type": schema.StringAttribute{Computed: true},
-		"status":        schema.StringAttribute{Computed: true},
-		"product":       schema.StringAttribute{Computed: true},
-		"location":      schema.StringAttribute{Computed: true},
-		"service_speed": schema.Int64Attribute{Computed: true},
-		"term":          schema.Int64Attribute{Computed: true},
-		"mrc":           schema.StringAttribute{Computed: true},
-		"created_date":  schema.StringAttribute{Computed: true},
-		"customer_gid":  schema.StringAttribute{Computed: true},
-		"description":   schema.StringAttribute{Computed: true},
+		"id":            schema.Int64Attribute{Description: "Internal numeric service ID.", Computed: true},
+		"sid":           schema.StringAttribute{Description: "Service identifier (e.g. `SID1194`).", Computed: true},
+		"name":          schema.StringAttribute{Description: "Human-readable service name.", Computed: true},
+		"response_type": schema.StringAttribute{Description: "Service type discriminator (e.g. `IPTransit`, `FlexTunnel`, `DdosProtection`).", Computed: true},
+		"status":        schema.StringAttribute{Description: "Current service status.", Computed: true},
+		"product":       schema.StringAttribute{Description: "Name of the product this service is an instance of.", Computed: true},
+		"location":      schema.StringAttribute{Description: "Name of the primary location for this service.", Computed: true},
+		"service_speed": schema.Int64Attribute{Description: "Service speed in Mbps.", Computed: true},
+		"term":          schema.Int64Attribute{Description: "Contract term in months.", Computed: true},
+		"mrc":           schema.StringAttribute{Description: "Monthly recurring charge, formatted for display (e.g. `€75.00`).", Computed: true},
+		"created_date":  schema.StringAttribute{Description: "Service creation timestamp (RFC 3339).", Computed: true},
+		"customer_gid":  schema.StringAttribute{Description: "Global identifier of the customer that owns this service.", Computed: true},
+		"description":   schema.StringAttribute{Description: "Optional free-text service description.", Computed: true},
 	}
 }
 
@@ -61,13 +61,14 @@ type serviceComponentModel struct {
 // componentsAttribute returns the schema for a curated components list.
 func componentsAttribute() schema.ListNestedAttribute {
 	return schema.ListNestedAttribute{
-		Computed: true,
+		Computed:    true,
+		Description: "Billable components that make up this service.",
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
-				"component_type": schema.StringAttribute{Computed: true},
-				"name":           schema.StringAttribute{Computed: true},
-				"response_type":  schema.StringAttribute{Computed: true},
-				"price":          schema.StringAttribute{Computed: true},
+				"component_type": schema.StringAttribute{Description: "Component type discriminator.", Computed: true},
+				"name":           schema.StringAttribute{Description: "Human-readable component name.", Computed: true},
+				"response_type":  schema.StringAttribute{Description: "Component subtype (e.g. `LAG`, `BillingGroup`, `VLAN`).", Computed: true},
+				"price":          schema.StringAttribute{Description: "Component price, formatted for display.", Computed: true},
 			},
 		},
 	}

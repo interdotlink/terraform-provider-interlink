@@ -50,17 +50,19 @@ func (d *ipServicesDataSource) Metadata(ctx context.Context, req datasource.Meta
 
 func (d *ipServicesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	attrs := baseServiceAttributes()
-	attrs["port"] = schema.StringAttribute{Computed: true}
-	attrs["vlan_id"] = schema.Int64Attribute{Computed: true}
-	attrs["prefix_v4"] = schema.StringAttribute{Computed: true}
-	attrs["prefix_v6"] = schema.StringAttribute{Computed: true}
-	attrs["bgp_v4_asn"] = schema.Int64Attribute{Computed: true}
-	attrs["bgp_v6_asn"] = schema.Int64Attribute{Computed: true}
+	attrs["port"] = schema.StringAttribute{Description: "Name of the port the service is delivered on.", Computed: true}
+	attrs["vlan_id"] = schema.Int64Attribute{Description: "VLAN ID on the port, if tagged.", Computed: true}
+	attrs["prefix_v4"] = schema.StringAttribute{Description: "Name of the assigned IPv4 prefix.", Computed: true}
+	attrs["prefix_v6"] = schema.StringAttribute{Description: "Name of the assigned IPv6 prefix.", Computed: true}
+	attrs["bgp_v4_asn"] = schema.Int64Attribute{Description: "Customer BGP autonomous system number for the IPv4 session.", Computed: true}
+	attrs["bgp_v6_asn"] = schema.Int64Attribute{Description: "Customer BGP autonomous system number for the IPv6 session.", Computed: true}
 
 	resp.Schema = schema.Schema{
+		Description: "Detailed view of IP-family services (IP Transit, IP Access, FlexTunnel, PNI Peering) with IP-specific attributes inline.",
 		Attributes: map[string]schema.Attribute{
 			"services": schema.ListNestedAttribute{
-				Computed: true,
+				Description: "IP-family services.",
+				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: attrs,
 				},

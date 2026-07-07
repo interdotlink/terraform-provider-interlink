@@ -40,16 +40,18 @@ func (d *ddosServicesDataSource) Metadata(ctx context.Context, req datasource.Me
 
 func (d *ddosServicesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	attrs := baseServiceAttributes()
-	attrs["ddos_protection_type"] = schema.StringAttribute{Computed: true}
-	attrs["attack_bandwidth"] = schema.Int64Attribute{Computed: true}
-	attrs["scrubbing_capacity"] = schema.Int64Attribute{Computed: true}
-	attrs["additional_networks"] = schema.Int64Attribute{Computed: true}
-	attrs["enterprise_reports"] = schema.Int64Attribute{Computed: true}
+	attrs["ddos_protection_type"] = schema.StringAttribute{Description: "DDoS protection tier (e.g. `Enterprise`).", Computed: true}
+	attrs["attack_bandwidth"] = schema.Int64Attribute{Description: "Protected attack bandwidth (component quantity).", Computed: true}
+	attrs["scrubbing_capacity"] = schema.Int64Attribute{Description: "Scrubbing capacity (component quantity).", Computed: true}
+	attrs["additional_networks"] = schema.Int64Attribute{Description: "Number of additional protected networks.", Computed: true}
+	attrs["enterprise_reports"] = schema.Int64Attribute{Description: "Number of enterprise reports included.", Computed: true}
 
 	resp.Schema = schema.Schema{
+		Description: "Detailed view of DDoS Protection services with sizing attributes inline.",
 		Attributes: map[string]schema.Attribute{
 			"services": schema.ListNestedAttribute{
-				Computed: true,
+				Description: "DDoS Protection services.",
+				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: attrs,
 				},

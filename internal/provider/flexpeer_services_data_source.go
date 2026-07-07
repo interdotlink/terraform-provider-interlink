@@ -41,17 +41,19 @@ func (d *flexpeerServicesDataSource) Metadata(ctx context.Context, req datasourc
 
 func (d *flexpeerServicesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	attrs := baseServiceAttributes()
-	attrs["flexconnect_key"] = schema.StringAttribute{Computed: true, Sensitive: true}
-	attrs["remote_customer"] = schema.StringAttribute{Computed: true}
-	attrs["virtual_network_name"] = schema.StringAttribute{Computed: true}
-	attrs["vlan_id"] = schema.Int64Attribute{Computed: true}
-	attrs["locations"] = schema.ListAttribute{Computed: true, ElementType: types.StringType}
+	attrs["flexconnect_key"] = schema.StringAttribute{Description: "FlexConnect key used to establish the peering. Sensitive.", Computed: true, Sensitive: true}
+	attrs["remote_customer"] = schema.StringAttribute{Description: "Name of the remote peering customer.", Computed: true}
+	attrs["virtual_network_name"] = schema.StringAttribute{Description: "Name of the virtual network this endpoint belongs to.", Computed: true}
+	attrs["vlan_id"] = schema.Int64Attribute{Description: "VLAN ID, if tagged.", Computed: true}
+	attrs["locations"] = schema.ListAttribute{Description: "Names of the locations (endpoints) in the same virtual network.", Computed: true, ElementType: types.StringType}
 	attrs["components"] = componentsAttribute()
 
 	resp.Schema = schema.Schema{
+		Description: "Detailed view of FlexPeer endpoint services, including the remote peer and billable components.",
 		Attributes: map[string]schema.Attribute{
 			"services": schema.ListNestedAttribute{
-				Computed: true,
+				Description: "FlexPeer endpoint services.",
+				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: attrs,
 				},

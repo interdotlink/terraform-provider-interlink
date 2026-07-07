@@ -39,17 +39,19 @@ func (d *projectsDataSource) Metadata(ctx context.Context, req datasource.Metada
 
 func (d *projectsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Fetches the Inter.link projects used to group services.",
 		Attributes: map[string]schema.Attribute{
 			"projects": schema.ListNestedAttribute{
-				Computed: true,
+				Description: "All projects.",
+				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"id":           schema.Int64Attribute{Computed: true},
-						"name":         schema.StringAttribute{Computed: true},
-						"created_date": schema.StringAttribute{Computed: true},
-						"prj":          schema.StringAttribute{Computed: true},
-						"status":       schema.StringAttribute{Computed: true},
-						"description":  schema.StringAttribute{Computed: true},
+						"id":           schema.Int64Attribute{Description: "Internal numeric project ID.", Computed: true},
+						"name":         schema.StringAttribute{Description: "Project name.", Computed: true},
+						"created_date": schema.StringAttribute{Description: "Project creation timestamp (RFC 3339).", Computed: true},
+						"prj":          schema.StringAttribute{Description: "Project identifier (e.g. `PRJ242`).", Computed: true},
+						"status":       schema.StringAttribute{Description: "Project status.", Computed: true},
+						"description":  schema.StringAttribute{Description: "Optional free-text project description.", Computed: true},
 					},
 				},
 			},
