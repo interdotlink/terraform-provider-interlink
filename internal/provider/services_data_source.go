@@ -32,9 +32,11 @@ func (d *servicesDataSource) Metadata(ctx context.Context, req datasource.Metada
 
 func (d *servicesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Lean inventory of all Inter.link services of every type, exposing only the fields common to every service. Use a per-family data source (e.g. `interlink_ip_services`) for type-specific details.",
 		Attributes: map[string]schema.Attribute{
 			"services": schema.ListNestedAttribute{
-				Computed: true,
+				Description: "All services, of every type.",
+				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: baseServiceAttributes(),
 				},

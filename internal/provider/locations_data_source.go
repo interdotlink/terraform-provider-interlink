@@ -44,23 +44,25 @@ func (d *locationsDataSource) Metadata(ctx context.Context, req datasource.Metad
 
 func (d *locationsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Fetches the Inter.link data-center locations (points of presence).",
 		Attributes: map[string]schema.Attribute{
 			"locations": schema.ListNestedAttribute{
-				Computed: true,
+				Description: "All locations.",
+				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"id":          schema.Int64Attribute{Computed: true},
-						"name":        schema.StringAttribute{Computed: true},
-						"description": schema.StringAttribute{Computed: true},
-						"line1":       schema.StringAttribute{Computed: true},
-						"line2":       schema.StringAttribute{Computed: true},
-						"postal_code": schema.StringAttribute{Computed: true},
-						"city":        schema.StringAttribute{Computed: true},
-						"country":     schema.StringAttribute{Computed: true},
-						"latitude":    schema.Float64Attribute{Computed: true},
-						"longitude":   schema.Float64Attribute{Computed: true},
-						"status":      schema.StringAttribute{Computed: true},
-						"type":        schema.StringAttribute{Computed: true},
+						"id":          schema.Int64Attribute{Description: "Internal numeric location ID.", Computed: true},
+						"name":        schema.StringAttribute{Description: "Location name (e.g. `FRA1-DE`).", Computed: true},
+						"description": schema.StringAttribute{Description: "Location description.", Computed: true},
+						"line1":       schema.StringAttribute{Description: "Street address, line 1.", Computed: true},
+						"line2":       schema.StringAttribute{Description: "Street address, line 2.", Computed: true},
+						"postal_code": schema.StringAttribute{Description: "Postal code.", Computed: true},
+						"city":        schema.StringAttribute{Description: "City name.", Computed: true},
+						"country":     schema.StringAttribute{Description: "Country name.", Computed: true},
+						"latitude":    schema.Float64Attribute{Description: "Latitude in decimal degrees.", Computed: true},
+						"longitude":   schema.Float64Attribute{Description: "Longitude in decimal degrees.", Computed: true},
+						"status":      schema.StringAttribute{Description: "Location status.", Computed: true},
+						"type":        schema.StringAttribute{Description: "Location type.", Computed: true},
 					},
 				},
 			},

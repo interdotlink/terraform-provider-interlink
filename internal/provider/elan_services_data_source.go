@@ -39,15 +39,17 @@ func (d *elanServicesDataSource) Metadata(ctx context.Context, req datasource.Me
 
 func (d *elanServicesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	attrs := baseServiceAttributes()
-	attrs["virtual_network_name"] = schema.StringAttribute{Computed: true}
-	attrs["vlan_id"] = schema.Int64Attribute{Computed: true}
-	attrs["locations"] = schema.ListAttribute{Computed: true, ElementType: types.StringType}
+	attrs["virtual_network_name"] = schema.StringAttribute{Description: "Name of the virtual network this endpoint belongs to.", Computed: true}
+	attrs["vlan_id"] = schema.Int64Attribute{Description: "VLAN ID, if tagged.", Computed: true}
+	attrs["locations"] = schema.ListAttribute{Description: "Names of the other locations (endpoints) in the same virtual network.", Computed: true, ElementType: types.StringType}
 	attrs["components"] = componentsAttribute()
 
 	resp.Schema = schema.Schema{
+		Description: "Detailed view of Flex Ethernet (ELAN) endpoint services, including their virtual network and billable components.",
 		Attributes: map[string]schema.Attribute{
 			"services": schema.ListNestedAttribute{
-				Computed: true,
+				Description: "ELAN endpoint services.",
+				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: attrs,
 				},

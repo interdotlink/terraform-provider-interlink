@@ -31,15 +31,19 @@ func (d *statusDataSource) Metadata(ctx context.Context, req datasource.Metadata
 
 func (d *statusDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Fetches the current operational status of the Inter.link platform.",
 		Attributes: map[string]schema.Attribute{
 			"status": schema.StringAttribute{
-				Computed: true,
+				Description: "Overall platform status (e.g. `success`).",
+				Computed:    true,
 			},
 			"has_planned_maintenance": schema.BoolAttribute{
-				Computed: true,
+				Description: "Whether there is planned maintenance scheduled.",
+				Computed:    true,
 			},
 			"has_ongoing_maintenance": schema.BoolAttribute{
-				Computed: true,
+				Description: "Whether there is maintenance currently in progress.",
+				Computed:    true,
 			},
 		},
 	}

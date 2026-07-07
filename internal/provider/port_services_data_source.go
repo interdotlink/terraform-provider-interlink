@@ -38,9 +38,11 @@ func (d *portServicesDataSource) Schema(ctx context.Context, req datasource.Sche
 	attrs["components"] = componentsAttribute()
 
 	resp.Schema = schema.Schema{
+		Description: "Detailed view of standalone Port services, including their billable components.",
 		Attributes: map[string]schema.Attribute{
 			"services": schema.ListNestedAttribute{
-				Computed: true,
+				Description: "Port services.",
+				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: attrs,
 				},

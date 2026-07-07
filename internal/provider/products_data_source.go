@@ -35,19 +35,24 @@ func (d *productsDataSource) Metadata(ctx context.Context, req datasource.Metada
 
 func (d *productsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Fetches the Inter.link product catalog.",
 		Attributes: map[string]schema.Attribute{
 			"products": schema.ListNestedAttribute{
-				Computed: true,
+				Description: "All products available in the catalog.",
+				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.Int64Attribute{
-							Computed: true,
+							Description: "Internal numeric product ID.",
+							Computed:    true,
 						},
 						"name": schema.StringAttribute{
-							Computed: true,
+							Description: "Product name (e.g. `Cloud Connect`).",
+							Computed:    true,
 						},
 						"pid": schema.StringAttribute{
-							Computed: true,
+							Description: "Product identifier (e.g. `PID25`).",
+							Computed:    true,
 						},
 					},
 				},

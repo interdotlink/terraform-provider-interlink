@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -31,13 +32,16 @@ func (p *interlinkProvider) Metadata(ctx context.Context, req provider.MetadataR
 
 func (p *interlinkProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Interact with the Inter.link Portal API.",
 		Attributes: map[string]schema.Attribute{
 			"api_key": schema.StringAttribute{
-				Required:  true,
-				Sensitive: true,
+				Description: "API key for the Inter.link Portal, sent as the `X-API-Key` header. Create one under API Keys in the portal. May also be set via the `INTERLINK_API_KEY` environment variable.",
+				Optional:    true,
+				Sensitive:   true,
 			},
 			"api_url": schema.StringAttribute{
-				Optional: true,
+				Description: "Base URL of the Inter.link Portal API. Defaults to `https://portal.inter.link`. May also be set via the `INTERLINK_API_URL` environment variable.",
+				Optional:    true,
 			},
 		},
 	}
@@ -70,17 +74,26 @@ func (p *interlinkProvider) Configure(ctx context.Context, req provider.Configur
 		return
 	}
 
-	baseURL := "https://portal.inter.link"
+	// Precedence for both settings: config attribute, then environment
+	// variable, then (for the URL) the default.
+	baseURL := os.Getenv("INTERLINK_API_URL")
 	if !config.ApiUrl.IsNull() {
 		baseURL = config.ApiUrl.ValueString()
+	}
+	if baseURL == "" {
+		baseURL = "https://portal.inter.link"
 	}
 
 	apiKey := config.ApiKey.ValueString()
 	if apiKey == "" {
+		apiKey = os.Getenv("INTERLINK_API_KEY")
+	}
+	if apiKey == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("api_key"),
 			"Missing Inter.link API key",
-			"api_key is empty. Provide the API key from the Inter.link portal.",
+			"Set the api_key attribute or the INTERLINK_API_KEY environment variable. "+
+				"Create an API key under API Keys in the Inter.link portal.",
 		)
 		return
 	}
