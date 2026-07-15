@@ -799,6 +799,7 @@ const (
 	ReadyForService ServiceStatus = "Ready for Service"
 	Trial           ServiceStatus = "Trial"
 	Unverified      ServiceStatus = "Unverified"
+	Updating        ServiceStatus = "Updating"
 )
 
 // Valid indicates whether the value is a known member of the ServiceStatus enum.
@@ -817,6 +818,8 @@ func (e ServiceStatus) Valid() bool {
 	case Trial:
 		return true
 	case Unverified:
+		return true
+	case Updating:
 		return true
 	default:
 		return false
@@ -2592,7 +2595,13 @@ type TwoFactorSetupConfirmRequest struct {
 // UpdateIpTransitRequest defines model for UpdateIpTransitRequest.
 type UpdateIpTransitRequest struct {
 	// Cdr Speed in Mbps in the range 0-400000
-	Cdr int `json:"cdr"`
+	Cdr *int `json:"cdr,omitempty"`
+
+	// VlanId VLAN ID in the range 1-4094
+	VlanId *int `json:"vlan_id,omitempty"`
+
+	// VlanType An enumeration.
+	VlanType *VlanTypes `json:"vlan_type,omitempty"`
 }
 
 // User defines model for User.
@@ -2831,21 +2840,13 @@ type NetworkFunctionsApiGetFirewallsParams struct {
 
 // CommonServicesApiListServiceComponentsParams defines parameters for CommonServicesApiListServiceComponents.
 type CommonServicesApiListServiceComponentsParams struct {
-	ServiceId *struct {
-		union json.RawMessage
-	} `form:"service_id,omitempty" json:"service_id,omitempty"`
+	ServiceId          *string `form:"service_id,omitempty" json:"service_id,omitempty"`
 	ProductComponentId *string `form:"product_component_id,omitempty" json:"product_component_id,omitempty"`
 	ShowInProgress     *bool   `form:"show_in_progress,omitempty" json:"show_in_progress,omitempty"`
 	ExcludeDependency  *bool   `form:"exclude_dependency,omitempty" json:"exclude_dependency,omitempty"`
 	DependencyId       *int    `form:"dependency_id,omitempty" json:"dependency_id,omitempty"`
 	IncludeServices    *bool   `form:"include_services,omitempty" json:"include_services,omitempty"`
 }
-
-// CommonServicesApiListServiceComponentsParamsServiceId0 defines parameters for CommonServicesApiListServiceComponents.
-type CommonServicesApiListServiceComponentsParamsServiceId0 = int
-
-// CommonServicesApiListServiceComponentsParamsServiceId1 defines parameters for CommonServicesApiListServiceComponents.
-type CommonServicesApiListServiceComponentsParamsServiceId1 = string
 
 // CommonServicesApiListServiceComponents200JSONResponseBody_Item defines parameters for CommonServicesApiListServiceComponents.
 type CommonServicesApiListServiceComponents200JSONResponseBody_Item struct {
@@ -2854,27 +2855,13 @@ type CommonServicesApiListServiceComponents200JSONResponseBody_Item struct {
 
 // CommonServicesApiListUsedVlansParams defines parameters for CommonServicesApiListUsedVlans.
 type CommonServicesApiListUsedVlansParams struct {
-	ServiceId struct {
-		union json.RawMessage
-	} `form:"service_id" json:"service_id"`
+	ServiceId string `form:"service_id" json:"service_id"`
 }
-
-// CommonServicesApiListUsedVlansParamsServiceId0 defines parameters for CommonServicesApiListUsedVlans.
-type CommonServicesApiListUsedVlansParamsServiceId0 = int
-
-// CommonServicesApiListUsedVlansParamsServiceId1 defines parameters for CommonServicesApiListUsedVlans.
-type CommonServicesApiListUsedVlansParamsServiceId1 = string
 
 // CommonServicesApiListUsedVlans200JSONResponseBody_Item defines parameters for CommonServicesApiListUsedVlans.
 type CommonServicesApiListUsedVlans200JSONResponseBody_Item struct {
 	union json.RawMessage
 }
-
-// CommonServicesApiGetServiceComponentParamsServiceComponentId0 defines parameters for CommonServicesApiGetServiceComponent.
-type CommonServicesApiGetServiceComponentParamsServiceComponentId0 = int
-
-// CommonServicesApiGetServiceComponentParamsServiceComponentId1 defines parameters for CommonServicesApiGetServiceComponent.
-type CommonServicesApiGetServiceComponentParamsServiceComponentId1 = string
 
 // CommonServicesApiGetServiceComponent200JSONResponseBody defines parameters for CommonServicesApiGetServiceComponent.
 type CommonServicesApiGetServiceComponent200JSONResponseBody struct {
@@ -2883,58 +2870,26 @@ type CommonServicesApiGetServiceComponent200JSONResponseBody struct {
 
 // CommonServicesApiListServicesParams defines parameters for CommonServicesApiListServices.
 type CommonServicesApiListServicesParams struct {
-	ServiceId          *string `form:"service_id,omitempty" json:"service_id,omitempty"`
-	ProductId          *string `form:"product_id,omitempty" json:"product_id,omitempty"`
-	ServiceComponentId *struct {
-		union json.RawMessage
-	} `form:"service_component_id,omitempty" json:"service_component_id,omitempty"`
-	IncludeDecommissioned *bool `form:"include_decommissioned,omitempty" json:"include_decommissioned,omitempty"`
+	ServiceId             *string `form:"service_id,omitempty" json:"service_id,omitempty"`
+	ProductId             *string `form:"product_id,omitempty" json:"product_id,omitempty"`
+	ServiceComponentId    *string `form:"service_component_id,omitempty" json:"service_component_id,omitempty"`
+	IncludeDecommissioned *bool   `form:"include_decommissioned,omitempty" json:"include_decommissioned,omitempty"`
 }
-
-// CommonServicesApiListServicesParamsServiceComponentId0 defines parameters for CommonServicesApiListServices.
-type CommonServicesApiListServicesParamsServiceComponentId0 = int
-
-// CommonServicesApiListServicesParamsServiceComponentId1 defines parameters for CommonServicesApiListServices.
-type CommonServicesApiListServicesParamsServiceComponentId1 = string
 
 // CommonServicesApiListServices200JSONResponseBody_Item defines parameters for CommonServicesApiListServices.
 type CommonServicesApiListServices200JSONResponseBody_Item struct {
 	union json.RawMessage
 }
 
-// CommonServicesApiGetServiceParamsServiceId0 defines parameters for CommonServicesApiGetService.
-type CommonServicesApiGetServiceParamsServiceId0 = int
-
-// CommonServicesApiGetServiceParamsServiceId1 defines parameters for CommonServicesApiGetService.
-type CommonServicesApiGetServiceParamsServiceId1 = string
-
 // CommonServicesApiGetService200JSONResponseBody defines parameters for CommonServicesApiGetService.
 type CommonServicesApiGetService200JSONResponseBody struct {
 	union json.RawMessage
 }
 
-// CommonServicesApiPatchServiceCustomerReferenceParamsServiceId0 defines parameters for CommonServicesApiPatchServiceCustomerReference.
-type CommonServicesApiPatchServiceCustomerReferenceParamsServiceId0 = int
-
-// CommonServicesApiPatchServiceCustomerReferenceParamsServiceId1 defines parameters for CommonServicesApiPatchServiceCustomerReference.
-type CommonServicesApiPatchServiceCustomerReferenceParamsServiceId1 = string
-
 // CommonServicesApiPatchServiceCustomerReference200JSONResponseBody defines parameters for CommonServicesApiPatchServiceCustomerReference.
 type CommonServicesApiPatchServiceCustomerReference200JSONResponseBody struct {
 	union json.RawMessage
 }
-
-// CommonServicesApiGetFlexConnectKeyParamsServiceId0 defines parameters for CommonServicesApiGetFlexConnectKey.
-type CommonServicesApiGetFlexConnectKeyParamsServiceId0 = int
-
-// CommonServicesApiGetFlexConnectKeyParamsServiceId1 defines parameters for CommonServicesApiGetFlexConnectKey.
-type CommonServicesApiGetFlexConnectKeyParamsServiceId1 = string
-
-// CommonServicesApiCreateOrRefreshFlexConnectKeyParamsServiceId0 defines parameters for CommonServicesApiCreateOrRefreshFlexConnectKey.
-type CommonServicesApiCreateOrRefreshFlexConnectKeyParamsServiceId0 = int
-
-// CommonServicesApiCreateOrRefreshFlexConnectKeyParamsServiceId1 defines parameters for CommonServicesApiCreateOrRefreshFlexConnectKey.
-type CommonServicesApiCreateOrRefreshFlexConnectKeyParamsServiceId1 = string
 
 // CommonServicesApisTicketApiListTicketsParams defines parameters for CommonServicesApisTicketApiListTickets.
 type CommonServicesApisTicketApiListTicketsParams struct {
@@ -11213,9 +11168,9 @@ type ClientInterface interface {
 	IpTransitApiVerifyAsIdentifierOwnership(ctx context.Context, body IpTransitApiVerifyAsIdentifierOwnershipJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// IpTransitApiUpdateIpTransitWithBody request with any body
-	IpTransitApiUpdateIpTransitWithBody(ctx context.Context, guid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	IpTransitApiUpdateIpTransitWithBody(ctx context.Context, serviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	IpTransitApiUpdateIpTransit(ctx context.Context, guid string, body IpTransitApiUpdateIpTransitJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	IpTransitApiUpdateIpTransit(ctx context.Context, serviceId string, body IpTransitApiUpdateIpTransitJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CommonServicesApiListLoaDocuments request
 	CommonServicesApiListLoaDocuments(ctx context.Context, params *CommonServicesApiListLoaDocumentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11278,36 +11233,24 @@ type ClientInterface interface {
 	CommonServicesApiListUsedVlans(ctx context.Context, params *CommonServicesApiListUsedVlansParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CommonServicesApiGetServiceComponent request
-	CommonServicesApiGetServiceComponent(ctx context.Context, serviceComponentId struct {
-		union json.RawMessage
-	}, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CommonServicesApiGetServiceComponent(ctx context.Context, serviceComponentId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CommonServicesApiListServices request
 	CommonServicesApiListServices(ctx context.Context, params *CommonServicesApiListServicesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CommonServicesApiGetService request
-	CommonServicesApiGetService(ctx context.Context, serviceId struct {
-		union json.RawMessage
-	}, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CommonServicesApiGetService(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CommonServicesApiPatchServiceCustomerReferenceWithBody request with any body
-	CommonServicesApiPatchServiceCustomerReferenceWithBody(ctx context.Context, serviceId struct {
-		union json.RawMessage
-	}, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CommonServicesApiPatchServiceCustomerReferenceWithBody(ctx context.Context, serviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	CommonServicesApiPatchServiceCustomerReference(ctx context.Context, serviceId struct {
-		union json.RawMessage
-	}, body CommonServicesApiPatchServiceCustomerReferenceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CommonServicesApiPatchServiceCustomerReference(ctx context.Context, serviceId string, body CommonServicesApiPatchServiceCustomerReferenceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CommonServicesApiGetFlexConnectKey request
-	CommonServicesApiGetFlexConnectKey(ctx context.Context, serviceId struct {
-		union json.RawMessage
-	}, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CommonServicesApiGetFlexConnectKey(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CommonServicesApiCreateOrRefreshFlexConnectKey request
-	CommonServicesApiCreateOrRefreshFlexConnectKey(ctx context.Context, serviceId struct {
-		union json.RawMessage
-	}, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CommonServicesApiCreateOrRefreshFlexConnectKey(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PortalStatusApiGetStatus request
 	PortalStatusApiGetStatus(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11940,8 +11883,8 @@ func (c *Client) IpTransitApiVerifyAsIdentifierOwnership(ctx context.Context, bo
 	return c.Client.Do(req)
 }
 
-func (c *Client) IpTransitApiUpdateIpTransitWithBody(ctx context.Context, guid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewIpTransitApiUpdateIpTransitRequestWithBody(c.Server, guid, contentType, body)
+func (c *Client) IpTransitApiUpdateIpTransitWithBody(ctx context.Context, serviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewIpTransitApiUpdateIpTransitRequestWithBody(c.Server, serviceId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -11952,8 +11895,8 @@ func (c *Client) IpTransitApiUpdateIpTransitWithBody(ctx context.Context, guid s
 	return c.Client.Do(req)
 }
 
-func (c *Client) IpTransitApiUpdateIpTransit(ctx context.Context, guid string, body IpTransitApiUpdateIpTransitJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewIpTransitApiUpdateIpTransitRequest(c.Server, guid, body)
+func (c *Client) IpTransitApiUpdateIpTransit(ctx context.Context, serviceId string, body IpTransitApiUpdateIpTransitJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewIpTransitApiUpdateIpTransitRequest(c.Server, serviceId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -12216,9 +12159,7 @@ func (c *Client) CommonServicesApiListUsedVlans(ctx context.Context, params *Com
 	return c.Client.Do(req)
 }
 
-func (c *Client) CommonServicesApiGetServiceComponent(ctx context.Context, serviceComponentId struct {
-	union json.RawMessage
-}, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CommonServicesApiGetServiceComponent(ctx context.Context, serviceComponentId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCommonServicesApiGetServiceComponentRequest(c.Server, serviceComponentId)
 	if err != nil {
 		return nil, err
@@ -12242,9 +12183,7 @@ func (c *Client) CommonServicesApiListServices(ctx context.Context, params *Comm
 	return c.Client.Do(req)
 }
 
-func (c *Client) CommonServicesApiGetService(ctx context.Context, serviceId struct {
-	union json.RawMessage
-}, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CommonServicesApiGetService(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCommonServicesApiGetServiceRequest(c.Server, serviceId)
 	if err != nil {
 		return nil, err
@@ -12256,9 +12195,7 @@ func (c *Client) CommonServicesApiGetService(ctx context.Context, serviceId stru
 	return c.Client.Do(req)
 }
 
-func (c *Client) CommonServicesApiPatchServiceCustomerReferenceWithBody(ctx context.Context, serviceId struct {
-	union json.RawMessage
-}, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CommonServicesApiPatchServiceCustomerReferenceWithBody(ctx context.Context, serviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCommonServicesApiPatchServiceCustomerReferenceRequestWithBody(c.Server, serviceId, contentType, body)
 	if err != nil {
 		return nil, err
@@ -12270,9 +12207,7 @@ func (c *Client) CommonServicesApiPatchServiceCustomerReferenceWithBody(ctx cont
 	return c.Client.Do(req)
 }
 
-func (c *Client) CommonServicesApiPatchServiceCustomerReference(ctx context.Context, serviceId struct {
-	union json.RawMessage
-}, body CommonServicesApiPatchServiceCustomerReferenceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CommonServicesApiPatchServiceCustomerReference(ctx context.Context, serviceId string, body CommonServicesApiPatchServiceCustomerReferenceJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCommonServicesApiPatchServiceCustomerReferenceRequest(c.Server, serviceId, body)
 	if err != nil {
 		return nil, err
@@ -12284,9 +12219,7 @@ func (c *Client) CommonServicesApiPatchServiceCustomerReference(ctx context.Cont
 	return c.Client.Do(req)
 }
 
-func (c *Client) CommonServicesApiGetFlexConnectKey(ctx context.Context, serviceId struct {
-	union json.RawMessage
-}, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CommonServicesApiGetFlexConnectKey(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCommonServicesApiGetFlexConnectKeyRequest(c.Server, serviceId)
 	if err != nil {
 		return nil, err
@@ -12298,9 +12231,7 @@ func (c *Client) CommonServicesApiGetFlexConnectKey(ctx context.Context, service
 	return c.Client.Do(req)
 }
 
-func (c *Client) CommonServicesApiCreateOrRefreshFlexConnectKey(ctx context.Context, serviceId struct {
-	union json.RawMessage
-}, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CommonServicesApiCreateOrRefreshFlexConnectKey(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCommonServicesApiCreateOrRefreshFlexConnectKeyRequest(c.Server, serviceId)
 	if err != nil {
 		return nil, err
@@ -13753,23 +13684,23 @@ func NewIpTransitApiVerifyAsIdentifierOwnershipRequestWithBody(server string, co
 }
 
 // NewIpTransitApiUpdateIpTransitRequest calls the generic IpTransitApiUpdateIpTransit builder with application/json body
-func NewIpTransitApiUpdateIpTransitRequest(server string, guid string, body IpTransitApiUpdateIpTransitJSONRequestBody) (*http.Request, error) {
+func NewIpTransitApiUpdateIpTransitRequest(server string, serviceId string, body IpTransitApiUpdateIpTransitJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewIpTransitApiUpdateIpTransitRequestWithBody(server, guid, "application/json", bodyReader)
+	return NewIpTransitApiUpdateIpTransitRequestWithBody(server, serviceId, "application/json", bodyReader)
 }
 
 // NewIpTransitApiUpdateIpTransitRequestWithBody generates requests for IpTransitApiUpdateIpTransit with any type of body
-func NewIpTransitApiUpdateIpTransitRequestWithBody(server string, guid string, contentType string, body io.Reader) (*http.Request, error) {
+func NewIpTransitApiUpdateIpTransitRequestWithBody(server string, serviceId string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "guid", guid, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "service_id", serviceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
 	if err != nil {
 		return nil, err
 	}
@@ -14574,7 +14505,7 @@ func NewCommonServicesApiListServiceComponentsRequest(server string, params *Com
 
 		if params.ServiceId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "service_id", *params.ServiceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "service_id", *params.ServiceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -14686,7 +14617,7 @@ func NewCommonServicesApiListUsedVlansRequest(server string, params *CommonServi
 		// per the OpenAPI spec (e.g. "color=blue,black,brown").
 		var rawQueryFragments []string
 
-		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "service_id", params.ServiceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+		if queryFrag, err := runtime.StyleParamWithOptions("form", true, "service_id", params.ServiceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 			return nil, err
 		} else {
 			for _, qp := range strings.Split(queryFrag, "&") {
@@ -14709,14 +14640,12 @@ func NewCommonServicesApiListUsedVlansRequest(server string, params *CommonServi
 }
 
 // NewCommonServicesApiGetServiceComponentRequest generates requests for CommonServicesApiGetServiceComponent
-func NewCommonServicesApiGetServiceComponentRequest(server string, serviceComponentId struct {
-	union json.RawMessage
-}) (*http.Request, error) {
+func NewCommonServicesApiGetServiceComponentRequest(server string, serviceComponentId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "service_component_id", serviceComponentId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "service_component_id", serviceComponentId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
 	if err != nil {
 		return nil, err
 	}
@@ -14798,7 +14727,7 @@ func NewCommonServicesApiListServicesRequest(server string, params *CommonServic
 
 		if params.ServiceComponentId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "service_component_id", *params.ServiceComponentId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "service_component_id", *params.ServiceComponentId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else {
 				for _, qp := range strings.Split(queryFrag, "&") {
@@ -14835,14 +14764,12 @@ func NewCommonServicesApiListServicesRequest(server string, params *CommonServic
 }
 
 // NewCommonServicesApiGetServiceRequest generates requests for CommonServicesApiGetService
-func NewCommonServicesApiGetServiceRequest(server string, serviceId struct {
-	union json.RawMessage
-}) (*http.Request, error) {
+func NewCommonServicesApiGetServiceRequest(server string, serviceId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "service_id", serviceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "service_id", serviceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
 	if err != nil {
 		return nil, err
 	}
@@ -14871,9 +14798,7 @@ func NewCommonServicesApiGetServiceRequest(server string, serviceId struct {
 }
 
 // NewCommonServicesApiPatchServiceCustomerReferenceRequest calls the generic CommonServicesApiPatchServiceCustomerReference builder with application/json body
-func NewCommonServicesApiPatchServiceCustomerReferenceRequest(server string, serviceId struct {
-	union json.RawMessage
-}, body CommonServicesApiPatchServiceCustomerReferenceJSONRequestBody) (*http.Request, error) {
+func NewCommonServicesApiPatchServiceCustomerReferenceRequest(server string, serviceId string, body CommonServicesApiPatchServiceCustomerReferenceJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
@@ -14884,14 +14809,12 @@ func NewCommonServicesApiPatchServiceCustomerReferenceRequest(server string, ser
 }
 
 // NewCommonServicesApiPatchServiceCustomerReferenceRequestWithBody generates requests for CommonServicesApiPatchServiceCustomerReference with any type of body
-func NewCommonServicesApiPatchServiceCustomerReferenceRequestWithBody(server string, serviceId struct {
-	union json.RawMessage
-}, contentType string, body io.Reader) (*http.Request, error) {
+func NewCommonServicesApiPatchServiceCustomerReferenceRequestWithBody(server string, serviceId string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "service_id", serviceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "service_id", serviceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
 	if err != nil {
 		return nil, err
 	}
@@ -14922,14 +14845,12 @@ func NewCommonServicesApiPatchServiceCustomerReferenceRequestWithBody(server str
 }
 
 // NewCommonServicesApiGetFlexConnectKeyRequest generates requests for CommonServicesApiGetFlexConnectKey
-func NewCommonServicesApiGetFlexConnectKeyRequest(server string, serviceId struct {
-	union json.RawMessage
-}) (*http.Request, error) {
+func NewCommonServicesApiGetFlexConnectKeyRequest(server string, serviceId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "service_id", serviceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "service_id", serviceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
 	if err != nil {
 		return nil, err
 	}
@@ -14958,14 +14879,12 @@ func NewCommonServicesApiGetFlexConnectKeyRequest(server string, serviceId struc
 }
 
 // NewCommonServicesApiCreateOrRefreshFlexConnectKeyRequest generates requests for CommonServicesApiCreateOrRefreshFlexConnectKey
-func NewCommonServicesApiCreateOrRefreshFlexConnectKeyRequest(server string, serviceId struct {
-	union json.RawMessage
-}) (*http.Request, error) {
+func NewCommonServicesApiCreateOrRefreshFlexConnectKeyRequest(server string, serviceId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "service_id", serviceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "service_id", serviceId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
 	if err != nil {
 		return nil, err
 	}
@@ -16097,9 +16016,9 @@ type ClientWithResponsesInterface interface {
 	IpTransitApiVerifyAsIdentifierOwnershipWithResponse(ctx context.Context, body IpTransitApiVerifyAsIdentifierOwnershipJSONRequestBody, reqEditors ...RequestEditorFn) (*IpTransitApiVerifyAsIdentifierOwnershipResponse, error)
 
 	// IpTransitApiUpdateIpTransitWithBodyWithResponse request with any body
-	IpTransitApiUpdateIpTransitWithBodyWithResponse(ctx context.Context, guid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*IpTransitApiUpdateIpTransitResponse, error)
+	IpTransitApiUpdateIpTransitWithBodyWithResponse(ctx context.Context, serviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*IpTransitApiUpdateIpTransitResponse, error)
 
-	IpTransitApiUpdateIpTransitWithResponse(ctx context.Context, guid string, body IpTransitApiUpdateIpTransitJSONRequestBody, reqEditors ...RequestEditorFn) (*IpTransitApiUpdateIpTransitResponse, error)
+	IpTransitApiUpdateIpTransitWithResponse(ctx context.Context, serviceId string, body IpTransitApiUpdateIpTransitJSONRequestBody, reqEditors ...RequestEditorFn) (*IpTransitApiUpdateIpTransitResponse, error)
 
 	// CommonServicesApiListLoaDocumentsWithResponse request
 	CommonServicesApiListLoaDocumentsWithResponse(ctx context.Context, params *CommonServicesApiListLoaDocumentsParams, reqEditors ...RequestEditorFn) (*CommonServicesApiListLoaDocumentsResponse, error)
@@ -16162,36 +16081,24 @@ type ClientWithResponsesInterface interface {
 	CommonServicesApiListUsedVlansWithResponse(ctx context.Context, params *CommonServicesApiListUsedVlansParams, reqEditors ...RequestEditorFn) (*CommonServicesApiListUsedVlansResponse, error)
 
 	// CommonServicesApiGetServiceComponentWithResponse request
-	CommonServicesApiGetServiceComponentWithResponse(ctx context.Context, serviceComponentId struct {
-		union json.RawMessage
-	}, reqEditors ...RequestEditorFn) (*CommonServicesApiGetServiceComponentResponse, error)
+	CommonServicesApiGetServiceComponentWithResponse(ctx context.Context, serviceComponentId string, reqEditors ...RequestEditorFn) (*CommonServicesApiGetServiceComponentResponse, error)
 
 	// CommonServicesApiListServicesWithResponse request
 	CommonServicesApiListServicesWithResponse(ctx context.Context, params *CommonServicesApiListServicesParams, reqEditors ...RequestEditorFn) (*CommonServicesApiListServicesResponse, error)
 
 	// CommonServicesApiGetServiceWithResponse request
-	CommonServicesApiGetServiceWithResponse(ctx context.Context, serviceId struct {
-		union json.RawMessage
-	}, reqEditors ...RequestEditorFn) (*CommonServicesApiGetServiceResponse, error)
+	CommonServicesApiGetServiceWithResponse(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*CommonServicesApiGetServiceResponse, error)
 
 	// CommonServicesApiPatchServiceCustomerReferenceWithBodyWithResponse request with any body
-	CommonServicesApiPatchServiceCustomerReferenceWithBodyWithResponse(ctx context.Context, serviceId struct {
-		union json.RawMessage
-	}, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CommonServicesApiPatchServiceCustomerReferenceResponse, error)
+	CommonServicesApiPatchServiceCustomerReferenceWithBodyWithResponse(ctx context.Context, serviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CommonServicesApiPatchServiceCustomerReferenceResponse, error)
 
-	CommonServicesApiPatchServiceCustomerReferenceWithResponse(ctx context.Context, serviceId struct {
-		union json.RawMessage
-	}, body CommonServicesApiPatchServiceCustomerReferenceJSONRequestBody, reqEditors ...RequestEditorFn) (*CommonServicesApiPatchServiceCustomerReferenceResponse, error)
+	CommonServicesApiPatchServiceCustomerReferenceWithResponse(ctx context.Context, serviceId string, body CommonServicesApiPatchServiceCustomerReferenceJSONRequestBody, reqEditors ...RequestEditorFn) (*CommonServicesApiPatchServiceCustomerReferenceResponse, error)
 
 	// CommonServicesApiGetFlexConnectKeyWithResponse request
-	CommonServicesApiGetFlexConnectKeyWithResponse(ctx context.Context, serviceId struct {
-		union json.RawMessage
-	}, reqEditors ...RequestEditorFn) (*CommonServicesApiGetFlexConnectKeyResponse, error)
+	CommonServicesApiGetFlexConnectKeyWithResponse(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*CommonServicesApiGetFlexConnectKeyResponse, error)
 
 	// CommonServicesApiCreateOrRefreshFlexConnectKeyWithResponse request
-	CommonServicesApiCreateOrRefreshFlexConnectKeyWithResponse(ctx context.Context, serviceId struct {
-		union json.RawMessage
-	}, reqEditors ...RequestEditorFn) (*CommonServicesApiCreateOrRefreshFlexConnectKeyResponse, error)
+	CommonServicesApiCreateOrRefreshFlexConnectKeyWithResponse(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*CommonServicesApiCreateOrRefreshFlexConnectKeyResponse, error)
 
 	// PortalStatusApiGetStatusWithResponse request
 	PortalStatusApiGetStatusWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*PortalStatusApiGetStatusResponse, error)
@@ -19064,16 +18971,16 @@ func (c *ClientWithResponses) IpTransitApiVerifyAsIdentifierOwnershipWithRespons
 }
 
 // IpTransitApiUpdateIpTransitWithBodyWithResponse request with arbitrary body returning *IpTransitApiUpdateIpTransitResponse
-func (c *ClientWithResponses) IpTransitApiUpdateIpTransitWithBodyWithResponse(ctx context.Context, guid string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*IpTransitApiUpdateIpTransitResponse, error) {
-	rsp, err := c.IpTransitApiUpdateIpTransitWithBody(ctx, guid, contentType, body, reqEditors...)
+func (c *ClientWithResponses) IpTransitApiUpdateIpTransitWithBodyWithResponse(ctx context.Context, serviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*IpTransitApiUpdateIpTransitResponse, error) {
+	rsp, err := c.IpTransitApiUpdateIpTransitWithBody(ctx, serviceId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseIpTransitApiUpdateIpTransitResponse(rsp)
 }
 
-func (c *ClientWithResponses) IpTransitApiUpdateIpTransitWithResponse(ctx context.Context, guid string, body IpTransitApiUpdateIpTransitJSONRequestBody, reqEditors ...RequestEditorFn) (*IpTransitApiUpdateIpTransitResponse, error) {
-	rsp, err := c.IpTransitApiUpdateIpTransit(ctx, guid, body, reqEditors...)
+func (c *ClientWithResponses) IpTransitApiUpdateIpTransitWithResponse(ctx context.Context, serviceId string, body IpTransitApiUpdateIpTransitJSONRequestBody, reqEditors ...RequestEditorFn) (*IpTransitApiUpdateIpTransitResponse, error) {
+	rsp, err := c.IpTransitApiUpdateIpTransit(ctx, serviceId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -19267,9 +19174,7 @@ func (c *ClientWithResponses) CommonServicesApiListUsedVlansWithResponse(ctx con
 }
 
 // CommonServicesApiGetServiceComponentWithResponse request returning *CommonServicesApiGetServiceComponentResponse
-func (c *ClientWithResponses) CommonServicesApiGetServiceComponentWithResponse(ctx context.Context, serviceComponentId struct {
-	union json.RawMessage
-}, reqEditors ...RequestEditorFn) (*CommonServicesApiGetServiceComponentResponse, error) {
+func (c *ClientWithResponses) CommonServicesApiGetServiceComponentWithResponse(ctx context.Context, serviceComponentId string, reqEditors ...RequestEditorFn) (*CommonServicesApiGetServiceComponentResponse, error) {
 	rsp, err := c.CommonServicesApiGetServiceComponent(ctx, serviceComponentId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -19287,9 +19192,7 @@ func (c *ClientWithResponses) CommonServicesApiListServicesWithResponse(ctx cont
 }
 
 // CommonServicesApiGetServiceWithResponse request returning *CommonServicesApiGetServiceResponse
-func (c *ClientWithResponses) CommonServicesApiGetServiceWithResponse(ctx context.Context, serviceId struct {
-	union json.RawMessage
-}, reqEditors ...RequestEditorFn) (*CommonServicesApiGetServiceResponse, error) {
+func (c *ClientWithResponses) CommonServicesApiGetServiceWithResponse(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*CommonServicesApiGetServiceResponse, error) {
 	rsp, err := c.CommonServicesApiGetService(ctx, serviceId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -19298,9 +19201,7 @@ func (c *ClientWithResponses) CommonServicesApiGetServiceWithResponse(ctx contex
 }
 
 // CommonServicesApiPatchServiceCustomerReferenceWithBodyWithResponse request with arbitrary body returning *CommonServicesApiPatchServiceCustomerReferenceResponse
-func (c *ClientWithResponses) CommonServicesApiPatchServiceCustomerReferenceWithBodyWithResponse(ctx context.Context, serviceId struct {
-	union json.RawMessage
-}, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CommonServicesApiPatchServiceCustomerReferenceResponse, error) {
+func (c *ClientWithResponses) CommonServicesApiPatchServiceCustomerReferenceWithBodyWithResponse(ctx context.Context, serviceId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CommonServicesApiPatchServiceCustomerReferenceResponse, error) {
 	rsp, err := c.CommonServicesApiPatchServiceCustomerReferenceWithBody(ctx, serviceId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -19308,9 +19209,7 @@ func (c *ClientWithResponses) CommonServicesApiPatchServiceCustomerReferenceWith
 	return ParseCommonServicesApiPatchServiceCustomerReferenceResponse(rsp)
 }
 
-func (c *ClientWithResponses) CommonServicesApiPatchServiceCustomerReferenceWithResponse(ctx context.Context, serviceId struct {
-	union json.RawMessage
-}, body CommonServicesApiPatchServiceCustomerReferenceJSONRequestBody, reqEditors ...RequestEditorFn) (*CommonServicesApiPatchServiceCustomerReferenceResponse, error) {
+func (c *ClientWithResponses) CommonServicesApiPatchServiceCustomerReferenceWithResponse(ctx context.Context, serviceId string, body CommonServicesApiPatchServiceCustomerReferenceJSONRequestBody, reqEditors ...RequestEditorFn) (*CommonServicesApiPatchServiceCustomerReferenceResponse, error) {
 	rsp, err := c.CommonServicesApiPatchServiceCustomerReference(ctx, serviceId, body, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -19319,9 +19218,7 @@ func (c *ClientWithResponses) CommonServicesApiPatchServiceCustomerReferenceWith
 }
 
 // CommonServicesApiGetFlexConnectKeyWithResponse request returning *CommonServicesApiGetFlexConnectKeyResponse
-func (c *ClientWithResponses) CommonServicesApiGetFlexConnectKeyWithResponse(ctx context.Context, serviceId struct {
-	union json.RawMessage
-}, reqEditors ...RequestEditorFn) (*CommonServicesApiGetFlexConnectKeyResponse, error) {
+func (c *ClientWithResponses) CommonServicesApiGetFlexConnectKeyWithResponse(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*CommonServicesApiGetFlexConnectKeyResponse, error) {
 	rsp, err := c.CommonServicesApiGetFlexConnectKey(ctx, serviceId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -19330,9 +19227,7 @@ func (c *ClientWithResponses) CommonServicesApiGetFlexConnectKeyWithResponse(ctx
 }
 
 // CommonServicesApiCreateOrRefreshFlexConnectKeyWithResponse request returning *CommonServicesApiCreateOrRefreshFlexConnectKeyResponse
-func (c *ClientWithResponses) CommonServicesApiCreateOrRefreshFlexConnectKeyWithResponse(ctx context.Context, serviceId struct {
-	union json.RawMessage
-}, reqEditors ...RequestEditorFn) (*CommonServicesApiCreateOrRefreshFlexConnectKeyResponse, error) {
+func (c *ClientWithResponses) CommonServicesApiCreateOrRefreshFlexConnectKeyWithResponse(ctx context.Context, serviceId string, reqEditors ...RequestEditorFn) (*CommonServicesApiCreateOrRefreshFlexConnectKeyResponse, error) {
 	rsp, err := c.CommonServicesApiCreateOrRefreshFlexConnectKey(ctx, serviceId, reqEditors...)
 	if err != nil {
 		return nil, err

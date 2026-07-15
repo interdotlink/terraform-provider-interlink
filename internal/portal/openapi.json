@@ -599,16 +599,16 @@
         ]
       }
     },
-    "/api/v1/ip-transit/{guid}/": {
+    "/api/v1/ip-transit/{service_id}/": {
       "patch": {
         "operationId": "ip_transit_api_update_ip_transit",
         "summary": "Update Ip Transit",
         "parameters": [
           {
             "in": "path",
-            "name": "guid",
+            "name": "service_id",
             "schema": {
-              "title": "Guid",
+              "title": "Service Id",
               "type": "string"
             },
             "required": true
@@ -1773,14 +1773,7 @@
             "name": "service_component_id",
             "schema": {
               "title": "Service Component Id",
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                }
-              ]
+              "type": "string"
             },
             "required": false
           },
@@ -1881,14 +1874,7 @@
             "name": "service_id",
             "schema": {
               "title": "Service Id",
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                }
-              ]
+              "type": "string"
             },
             "required": true
           }
@@ -1975,14 +1961,7 @@
             "name": "service_id",
             "schema": {
               "title": "Service Id",
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                }
-              ]
+              "type": "string"
             },
             "required": true
           }
@@ -2079,14 +2058,7 @@
             "name": "service_id",
             "schema": {
               "title": "Service Id",
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                }
-              ]
+              "type": "string"
             },
             "required": true
           }
@@ -2124,14 +2096,7 @@
             "name": "service_id",
             "schema": {
               "title": "Service Id",
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                }
-              ]
+              "type": "string"
             },
             "required": true
           }
@@ -2171,14 +2136,7 @@
             "name": "service_id",
             "schema": {
               "title": "Service Id",
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                }
-              ]
+              "type": "string"
             },
             "required": false
           },
@@ -2368,14 +2326,7 @@
             "name": "service_id",
             "schema": {
               "title": "Service Id",
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                }
-              ]
+              "type": "string"
             },
             "required": true
           }
@@ -2517,14 +2468,7 @@
             "name": "service_component_id",
             "schema": {
               "title": "Service Component Id",
-              "anyOf": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "string"
-                }
-              ]
+              "type": "string"
             },
             "required": true
           }
@@ -4507,7 +4451,8 @@
           "Live",
           "Cancelled",
           "Decommissioned",
-          "Unverified"
+          "Unverified",
+          "Updating"
         ],
         "type": "string"
       },
@@ -8290,11 +8235,19 @@
             "multipleOf": 1,
             "example": 1000,
             "type": "integer"
+          },
+          "vlan_id": {
+            "title": "VLAN ID",
+            "description": "VLAN ID in the range 1-4094",
+            "minimum": 1,
+            "maximum": 4094,
+            "example": 2,
+            "type": "integer"
+          },
+          "vlan_type": {
+            "$ref": "#/components/schemas/VlanTypes"
           }
-        },
-        "required": [
-          "cdr"
-        ]
+        }
       },
       "ElanCreate": {
         "title": "ElanCreate",
