@@ -4,12 +4,48 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"terraform-provider-interlink/internal/portal"
 )
+
+// Enum values accepted by the resource, derived from the generated client
+// types. GRE Tunnel is intentionally excluded from the port types — IP Transit
+// over GRE is out of scope for this resource.
+var nonGREPortTypes = []string{
+	string(portal.N100GCUSTOMQSFP28),
+	string(portal.N100GLR1QSFP28),
+	string(portal.N100GLR4QSFP28),
+	string(portal.N10GCUSTOMSFP),
+	string(portal.N10GLRSFP),
+	string(portal.N1GCUSTOMSFP),
+	string(portal.N1GLXSFP),
+	string(portal.N25GCUSTOMSFP28),
+	string(portal.N25GLRSFP28),
+	string(portal.N400GCUSTOMQSFP28),
+	string(portal.N400GLR4OSFP),
+	string(portal.N400GLR4OSFPQSFPDD),
+}
+
+var vlanTypeValues = []string{
+	string(portal.VlanTypesTagged),
+	string(portal.VlanTypesUntagged),
+}
+
+var outboundAdvertisementValues = []string{
+	string(portal.DefaultRoute),
+	string(portal.FullRoutingTable),
+	string(portal.FullRoutingTableAndDefaultRoute),
+	string(portal.NoneOutboundOnly),
+	string(portal.NotSet),
+}
 
 type ipTransitResource struct {
 	client *portal.ClientWithResponses
@@ -89,6 +125,17 @@ func (r *ipTransitResource) Metadata(ctx context.Context, req resource.MetadataR
 	resp.TypeName = req.ProviderTypeName + "_ip_transit"
 }
 
+// ConfigValidators enforces that exactly one of the three port blocks is set.
+func (r *ipTransitResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("new_port"),
+			path.MatchRoot("existing_port"),
+			path.MatchRoot("existing_lag"),
+		),
+	}
+}
+
 func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	// VLAN attributes shared by all three port blocks.
 	vlanAttributes := func() map[string]schema.Attribute {
@@ -100,6 +147,7 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 			"vlan_type": schema.StringAttribute{
 				Description: "VLAN tagging mode: `Tagged` or `Untagged`.",
 				Optional:    true,
+				Validators:  []validator.String{stringvalidator.OneOf(vlanTypeValues...)},
 			},
 		}
 	}
@@ -116,6 +164,7 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 	newPortAttributes["port_type"] = schema.StringAttribute{
 		Description: "Physical port type, e.g. `100G-LR4 (QSFP28)` or `10G-LR (SFP+)`.",
 		Required:    true,
+		Validators:  []validator.String{stringvalidator.OneOf(nonGREPortTypes...)},
 	}
 	newPortAttributes["lag_member_count"] = schema.Int64Attribute{
 		Description: "Number of member ports when the new port is a LAG.",
@@ -196,6 +245,7 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 			"outbound_advertisement": schema.StringAttribute{
 				Description: "Outbound BGP advertisement policy: `Default Route`, `Full Routing Table`, `Full Routing Table and Default Route`, `None - Outbound Only`, or `not set`.",
 				Optional:    true,
+				Validators:  []validator.String{stringvalidator.OneOf(outboundAdvertisementValues...)},
 			},
 			"purchase_reference": schema.StringAttribute{
 				Description: "Free-text purchase reference recorded against the order.",
@@ -246,18 +296,21 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 				NestedObject: schema.NestedBlockObject{
 					Attributes: newPortAttributes,
 				},
+				Validators: []validator.List{listvalidator.SizeAtMost(1)},
 			},
 			"existing_port": schema.ListNestedBlock{
 				Description: "Attach this service to an existing port. Exactly one of `new_port`, `existing_port`, or `existing_lag` must be set.",
 				NestedObject: schema.NestedBlockObject{
 					Attributes: existingPortAttributes,
 				},
+				Validators: []validator.List{listvalidator.SizeAtMost(1)},
 			},
 			"existing_lag": schema.ListNestedBlock{
 				Description: "Attach this service to an existing LAG. Exactly one of `new_port`, `existing_port`, or `existing_lag` must be set.",
 				NestedObject: schema.NestedBlockObject{
 					Attributes: existingLagAttributes,
 				},
+				Validators: []validator.List{listvalidator.SizeAtMost(1)},
 			},
 		},
 	}
