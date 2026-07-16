@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
@@ -334,17 +336,102 @@ func (r *ipTransitResource) Configure(ctx context.Context, req resource.Configur
 }
 
 func (r *ipTransitResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	resp.Diagnostics.AddError(
-		"Not implemented",
-		"Create for interlink_ip_transit is implemented in a later step (17c-2).",
-	)
+	var m ipTransitResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &m)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	port, err := m.toCreatePort()
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to build IP Transit port", err.Error())
+		return
+	}
+
+	body := portal.IPTransitCreate{
+		BgpsessionAsn:           int(m.BgpsessionAsn.ValueInt64()),
+		BgpsessionAsSet:         m.BgpsessionAsSet.ValueString(),
+		BgpsessionPrefixLimitV4: int(m.BgpsessionPrefixLimitV4.ValueInt64()),
+		BgpsessionPrefixLimitV6: int(m.BgpsessionPrefixLimitV6.ValueInt64()),
+		PrefixV4Size:            int(m.PrefixV4Size.ValueInt64()),
+		PrefixV6Size:            int(m.PrefixV6Size.ValueInt64()),
+		Term:                    int(m.Term.ValueInt64()),
+		SyncFromPdb:             m.SyncFromPdb.ValueBool(),
+		Port:                    port,
+		BgpsessionPassword:      stringPtrOrNil(m.BgpsessionPassword),
+		PurchaseReference:       stringPtrOrNil(m.PurchaseReference),
+	}
+	if !m.AggregatedBilling.IsNull() {
+		ab := m.AggregatedBilling.ValueBool()
+		body.AggregatedBilling = &ab
+	}
+	if !m.OutboundAdvertisement.IsNull() {
+		oa := portal.BgpAdvertisementTypes(m.OutboundAdvertisement.ValueString())
+		body.OutboundAdvertisement = &oa
+	}
+
+	apiResp, err := r.client.IpTransitApiCreateIpTransitWithResponse(ctx, body)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to create Inter.link IP Transit service", err.Error())
+		return
+	}
+	if apiResp.JSON200 == nil {
+		resp.Diagnostics.AddError(
+			"Unexpected response creating Inter.link IP Transit service",
+			fmt.Sprintf("HTTP %s: %s", apiResp.Status(), string(apiResp.Body)),
+		)
+		return
+	}
+
+	s, err := apiResp.JSON200.AsIPTransit()
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to decode created IP Transit service", err.Error())
+		return
+	}
+	mapIPTransitComputed(&m, s)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &m)...)
 }
 
 func (r *ipTransitResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	resp.Diagnostics.AddError(
-		"Not implemented",
-		"Read for interlink_ip_transit is implemented in a later step (17c-2).",
-	)
+	var m ipTransitResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &m)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if m.Id.IsNull() {
+		return
+	}
+
+	serviceId := strconv.FormatInt(m.Id.ValueInt64(), 10)
+	apiResp, err := r.client.CommonServicesApiGetServiceWithResponse(ctx, serviceId)
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to read Inter.link IP Transit service", err.Error())
+		return
+	}
+	if apiResp.StatusCode() == http.StatusNotFound {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+	if apiResp.JSON200 == nil {
+		resp.Diagnostics.AddError(
+			"Unexpected response reading Inter.link IP Transit service",
+			fmt.Sprintf("HTTP %s: %s", apiResp.Status(), string(apiResp.Body)),
+		)
+		return
+	}
+
+	s, err := apiResp.JSON200.AsIPTransit()
+	if err != nil {
+		resp.Diagnostics.AddError("Unable to decode Inter.link IP Transit service", err.Error())
+		return
+	}
+	// Only the computed read-back attributes are refreshed from the API; the
+	// create arguments and the port block stay config-authoritative. (The VLAN
+	// round-trip into the port block is added with Import in a later step.)
+	mapIPTransitComputed(&m, s)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &m)...)
 }
 
 func (r *ipTransitResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -369,4 +456,87 @@ func (r *ipTransitResource) Delete(ctx context.Context, req resource.DeleteReque
 			"To stop managing this service with Terraform without cancelling it, run "+
 			"`terraform state rm` on this resource. To actually cancel it, contact Inter.link.",
 	)
+}
+
+// toCreatePort builds the port union for the create body from whichever port
+// block is set. Exactly one is set (guaranteed by the ExactlyOneOf validator).
+func (m ipTransitResourceModel) toCreatePort() (portal.IPTransitCreate_Port, error) {
+	var port portal.IPTransitCreate_Port
+	switch {
+	case len(m.NewPort) == 1:
+		b := m.NewPort[0]
+		err := port.FromUserNetworkInterface(portal.UserNetworkInterface{
+			Location:       b.Location.ValueString(),
+			Bandwidth:      int(b.Bandwidth.ValueInt64()),
+			PortType:       portal.PortTypes(b.PortType.ValueString()),
+			VlanId:         int64PtrOrNil(b.VlanId),
+			VlanType:       vlanTypePtr(b.VlanType),
+			LagMemberCount: int64PtrOrNil(b.LagMemberCount),
+			LagName:        stringPtrOrNil(b.LagName),
+		})
+		return port, err
+	case len(m.ExistingPort) == 1:
+		b := m.ExistingPort[0]
+		err := port.FromUserNetworkInterfaceOnExistingPort(portal.UserNetworkInterfaceOnExistingPort{
+			Id:        int(b.Id.ValueInt64()),
+			Bandwidth: int(b.Bandwidth.ValueInt64()),
+			VlanId:    int64PtrOrNil(b.VlanId),
+			VlanType:  vlanTypePtr(b.VlanType),
+		})
+		return port, err
+	case len(m.ExistingLag) == 1:
+		b := m.ExistingLag[0]
+		err := port.FromUserNetworkInterfaceOnExistingLAG(portal.UserNetworkInterfaceOnExistingLAG{
+			LagId:     int(b.LagId.ValueInt64()),
+			Bandwidth: int(b.Bandwidth.ValueInt64()),
+			VlanId:    int64PtrOrNil(b.VlanId),
+			VlanType:  vlanTypePtr(b.VlanType),
+		})
+		return port, err
+	}
+	return port, fmt.Errorf("exactly one of new_port, existing_port, or existing_lag must be set")
+}
+
+// mapIPTransitComputed fills the computed read-back attributes from an IPTransit
+// response. Shared by Create and Read.
+func mapIPTransitComputed(m *ipTransitResourceModel, s portal.IPTransit) {
+	m.Id = optionalInt(s.Id)
+	m.Sid = optionalString(s.Sid)
+	m.Name = types.StringValue(s.Name)
+	m.Status = types.StringValue(string(s.Status))
+	m.ServiceSpeed = optionalInt(s.ServiceSpeed)
+	m.CustomerGid = types.StringValue(s.CustomerGid)
+	if s.EndDate != nil {
+		m.EndDate = types.StringValue(s.EndDate.Format("2006-01-02"))
+	} else {
+		m.EndDate = types.StringNull()
+	}
+	m.NoticePeriod = optionalInt(s.NoticePeriod)
+	m.RenewalPeriod = optionalInt(s.RenewalPeriod)
+}
+
+// int64PtrOrNil / stringPtrOrNil / vlanTypePtr convert a known framework value
+// to a client pointer, or nil when the value is null or unknown.
+func int64PtrOrNil(v types.Int64) *int {
+	if v.IsNull() || v.IsUnknown() {
+		return nil
+	}
+	i := int(v.ValueInt64())
+	return &i
+}
+
+func stringPtrOrNil(v types.String) *string {
+	if v.IsNull() || v.IsUnknown() {
+		return nil
+	}
+	s := v.ValueString()
+	return &s
+}
+
+func vlanTypePtr(v types.String) *portal.VlanTypes {
+	if v.IsNull() || v.IsUnknown() {
+		return nil
+	}
+	vt := portal.VlanTypes(v.ValueString())
+	return &vt
 }
