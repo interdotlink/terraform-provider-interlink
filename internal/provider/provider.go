@@ -113,7 +113,9 @@ func (p *interlinkProvider) Configure(ctx context.Context, req provider.Configur
 }
 
 func (p *interlinkProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return nil
+	return []func() resource.Resource{
+		NewIpTransitResource,
+	}
 }
 
 func (p *interlinkProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
