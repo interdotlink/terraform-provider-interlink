@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -157,31 +158,36 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 
 	newPortAttributes := vlanAttributes()
 	newPortAttributes["location"] = schema.StringAttribute{
-		Description: "Location name where the new port is provisioned.",
-		Required:    true,
+		Description:   "Location name where the new port is provisioned.",
+		Required:      true,
+		PlanModifiers: []planmodifier.String{immutableString()},
 	}
 	newPortAttributes["bandwidth"] = schema.Int64Attribute{
 		Description: "Committed data rate (CDR) in Mbps, in the range 0-400000. This is the service speed.",
 		Required:    true,
 	}
 	newPortAttributes["port_type"] = schema.StringAttribute{
-		Description: "Physical port type, e.g. `100G-LR4 (QSFP28)` or `10G-LR (SFP+)`.",
-		Required:    true,
-		Validators:  []validator.String{stringvalidator.OneOf(nonGREPortTypes...)},
+		Description:   "Physical port type, e.g. `100G-LR4 (QSFP28)` or `10G-LR (SFP+)`.",
+		Required:      true,
+		Validators:    []validator.String{stringvalidator.OneOf(nonGREPortTypes...)},
+		PlanModifiers: []planmodifier.String{immutableString()},
 	}
 	newPortAttributes["lag_member_count"] = schema.Int64Attribute{
-		Description: "Number of member ports when the new port is a LAG.",
-		Optional:    true,
+		Description:   "Number of member ports when the new port is a LAG.",
+		Optional:      true,
+		PlanModifiers: []planmodifier.Int64{immutableInt64()},
 	}
 	newPortAttributes["lag_name"] = schema.StringAttribute{
-		Description: "Name for the LAG when the new port is a LAG.",
-		Optional:    true,
+		Description:   "Name for the LAG when the new port is a LAG.",
+		Optional:      true,
+		PlanModifiers: []planmodifier.String{immutableString()},
 	}
 
 	existingPortAttributes := vlanAttributes()
 	existingPortAttributes["id"] = schema.Int64Attribute{
-		Description: "Numeric ID of the existing port to attach to.",
-		Required:    true,
+		Description:   "Numeric ID of the existing port to attach to.",
+		Required:      true,
+		PlanModifiers: []planmodifier.Int64{immutableInt64()},
 	}
 	existingPortAttributes["bandwidth"] = schema.Int64Attribute{
 		Description: "Committed data rate (CDR) in Mbps, in the range 0-400000.",
@@ -190,8 +196,9 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 
 	existingLagAttributes := vlanAttributes()
 	existingLagAttributes["lag_id"] = schema.Int64Attribute{
-		Description: "Numeric ID of the existing LAG to attach to.",
-		Required:    true,
+		Description:   "Numeric ID of the existing LAG to attach to.",
+		Required:      true,
+		PlanModifiers: []planmodifier.Int64{immutableInt64()},
 	}
 	existingLagAttributes["bandwidth"] = schema.Int64Attribute{
 		Description: "Committed data rate (CDR) in Mbps, in the range 0-400000.",
@@ -203,58 +210,70 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 		Attributes: map[string]schema.Attribute{
 			// Required create arguments.
 			"bgpsession_asn": schema.Int64Attribute{
-				Description: "Customer BGP autonomous system number, in the range 1-4294967295.",
-				Required:    true,
+				Description:   "Customer BGP autonomous system number, in the range 1-4294967295.",
+				Required:      true,
+				PlanModifiers: []planmodifier.Int64{immutableInt64()},
 			},
 			"bgpsession_as_set": schema.StringAttribute{
-				Description: "AS-SET name according to RFC2622.",
-				Required:    true,
+				Description:   "AS-SET name according to RFC2622.",
+				Required:      true,
+				PlanModifiers: []planmodifier.String{immutableString()},
 			},
 			"bgpsession_prefix_limit_v4": schema.Int64Attribute{
-				Description: "IPv4 prefix limit, in the range 0-140000.",
-				Required:    true,
+				Description:   "IPv4 prefix limit, in the range 0-140000.",
+				Required:      true,
+				PlanModifiers: []planmodifier.Int64{immutableInt64()},
 			},
 			"bgpsession_prefix_limit_v6": schema.Int64Attribute{
-				Description: "IPv6 prefix limit, in the range 0-70000.",
-				Required:    true,
+				Description:   "IPv6 prefix limit, in the range 0-70000.",
+				Required:      true,
+				PlanModifiers: []planmodifier.Int64{immutableInt64()},
 			},
 			"prefix_v4_size": schema.Int64Attribute{
-				Description: "Requested IPv4 prefix size (CIDR length): `30` or `31`.",
-				Required:    true,
-				Validators:  []validator.Int64{int64validator.OneOf(30, 31)},
+				Description:   "Requested IPv4 prefix size (CIDR length): `30` or `31`.",
+				Required:      true,
+				Validators:    []validator.Int64{int64validator.OneOf(30, 31)},
+				PlanModifiers: []planmodifier.Int64{immutableInt64()},
 			},
 			"prefix_v6_size": schema.Int64Attribute{
-				Description: "Requested IPv6 prefix size (CIDR length): `126` or `127`.",
-				Required:    true,
-				Validators:  []validator.Int64{int64validator.OneOf(126, 127)},
+				Description:   "Requested IPv6 prefix size (CIDR length): `126` or `127`.",
+				Required:      true,
+				Validators:    []validator.Int64{int64validator.OneOf(126, 127)},
+				PlanModifiers: []planmodifier.Int64{immutableInt64()},
 			},
 			"term": schema.Int64Attribute{
-				Description: "Contract term in months.",
-				Required:    true,
+				Description:   "Contract term in months.",
+				Required:      true,
+				PlanModifiers: []planmodifier.Int64{immutableInt64()},
 			},
 			"sync_from_pdb": schema.BoolAttribute{
-				Description: "Whether to sync the BGP configuration from PeeringDB.",
-				Required:    true,
+				Description:   "Whether to sync the BGP configuration from PeeringDB.",
+				Required:      true,
+				PlanModifiers: []planmodifier.Bool{immutableBool()},
 			},
 
 			// Optional create arguments.
 			"bgpsession_password": schema.StringAttribute{
-				Description: "BGP session password (MD5). Required by the API. Write-only — never read back from the API.",
-				Required:    true,
-				Sensitive:   true,
+				Description:   "BGP session password (MD5). Required by the API. Write-only — never read back from the API.",
+				Required:      true,
+				Sensitive:     true,
+				PlanModifiers: []planmodifier.String{immutableString()},
 			},
 			"aggregated_billing": schema.BoolAttribute{
-				Description: "Whether to bill this service as part of an aggregated commit.",
-				Optional:    true,
+				Description:   "Whether to bill this service as part of an aggregated commit.",
+				Optional:      true,
+				PlanModifiers: []planmodifier.Bool{immutableBool()},
 			},
 			"outbound_advertisement": schema.StringAttribute{
-				Description: "Outbound BGP advertisement policy: `Default Route`, `Full Routing Table`, `Full Routing Table and Default Route`, `None - Outbound Only`, or `not set`.",
-				Optional:    true,
-				Validators:  []validator.String{stringvalidator.OneOf(outboundAdvertisementValues...)},
+				Description:   "Outbound BGP advertisement policy: `Default Route`, `Full Routing Table`, `Full Routing Table and Default Route`, `None - Outbound Only`, or `not set`.",
+				Optional:      true,
+				Validators:    []validator.String{stringvalidator.OneOf(outboundAdvertisementValues...)},
+				PlanModifiers: []planmodifier.String{immutableString()},
 			},
 			"purchase_reference": schema.StringAttribute{
-				Description: "Free-text purchase reference recorded against the order.",
-				Optional:    true,
+				Description:   "Free-text purchase reference recorded against the order.",
+				Optional:      true,
+				PlanModifiers: []planmodifier.String{immutableString()},
 			},
 
 			// Computed read-back attributes.
