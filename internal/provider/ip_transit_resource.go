@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -218,12 +219,14 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 				Required:    true,
 			},
 			"prefix_v4_size": schema.Int64Attribute{
-				Description: "Requested IPv4 prefix size (CIDR length).",
+				Description: "Requested IPv4 prefix size (CIDR length): `30` or `31`.",
 				Required:    true,
+				Validators:  []validator.Int64{int64validator.OneOf(30, 31)},
 			},
 			"prefix_v6_size": schema.Int64Attribute{
-				Description: "Requested IPv6 prefix size (CIDR length).",
+				Description: "Requested IPv6 prefix size (CIDR length): `126` or `127`.",
 				Required:    true,
+				Validators:  []validator.Int64{int64validator.OneOf(126, 127)},
 			},
 			"term": schema.Int64Attribute{
 				Description: "Contract term in months.",
@@ -236,8 +239,8 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 
 			// Optional create arguments.
 			"bgpsession_password": schema.StringAttribute{
-				Description: "BGP session password (MD5). Write-only — never read back from the API.",
-				Optional:    true,
+				Description: "BGP session password (MD5). Required by the API. Write-only — never read back from the API.",
+				Required:    true,
 				Sensitive:   true,
 			},
 			"aggregated_billing": schema.BoolAttribute{
