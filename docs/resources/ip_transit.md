@@ -57,14 +57,16 @@ resource "interlink_ip_transit" "example" {
 
 ### Required
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `bgpsession_as_set` (String) AS-SET name according to RFC2622.
 - `bgpsession_asn` (Number) Customer BGP autonomous system number, in the range 1-4294967295.
-- `bgpsession_password` (String, Sensitive) BGP session password (MD5). Required by the API. Write-only — never read back from the API.
+- `bgpsession_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) BGP session password (MD5). Required by the API. Write-only — supplied on create and never stored in state or read back.
 - `bgpsession_prefix_limit_v4` (Number) IPv4 prefix limit, in the range 0-140000.
 - `bgpsession_prefix_limit_v6` (Number) IPv6 prefix limit, in the range 0-70000.
 - `prefix_v4_size` (Number) Requested IPv4 prefix size (CIDR length): `30` or `31`.
 - `prefix_v6_size` (Number) Requested IPv6 prefix size (CIDR length): `126` or `127`.
-- `sync_from_pdb` (Boolean) Whether to sync the BGP configuration from PeeringDB.
+- `sync_from_pdb` (Boolean, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Whether to sync the BGP configuration from PeeringDB. Write-only — supplied on create and never stored in state.
 - `term` (Number) Contract term in months.
 
 ### Optional

@@ -247,17 +247,17 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 				PlanModifiers: []planmodifier.Int64{immutableInt64()},
 			},
 			"sync_from_pdb": schema.BoolAttribute{
-				Description:   "Whether to sync the BGP configuration from PeeringDB.",
-				Required:      true,
-				PlanModifiers: []planmodifier.Bool{immutableBool()},
+				Description: "Whether to sync the BGP configuration from PeeringDB. Write-only — supplied on create and never stored in state.",
+				Required:    true,
+				WriteOnly:   true,
 			},
 
 			// Optional create arguments.
 			"bgpsession_password": schema.StringAttribute{
-				Description:   "BGP session password (MD5). Required by the API. Write-only — never read back from the API.",
-				Required:      true,
-				Sensitive:     true,
-				PlanModifiers: []planmodifier.String{immutableString()},
+				Description: "BGP session password (MD5). Required by the API. Write-only — supplied on create and never stored in state or read back.",
+				Required:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
 			},
 			"aggregated_billing": schema.BoolAttribute{
 				Description:   "Whether to bill this service as part of an aggregated commit.",
@@ -364,6 +364,14 @@ func (r *ipTransitResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
+	// Write-only arguments (bgpsession_password, sync_from_pdb) are never stored
+	// in state and so are absent from the plan; read their values from config.
+	var config ipTransitResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	port, err := m.toCreatePort()
 	if err != nil {
 		resp.Diagnostics.AddError("Unable to build IP Transit port", err.Error())
@@ -378,9 +386,9 @@ func (r *ipTransitResource) Create(ctx context.Context, req resource.CreateReque
 		PrefixV4Size:            int(m.PrefixV4Size.ValueInt64()),
 		PrefixV6Size:            int(m.PrefixV6Size.ValueInt64()),
 		Term:                    int(m.Term.ValueInt64()),
-		SyncFromPdb:             m.SyncFromPdb.ValueBool(),
+		SyncFromPdb:             config.SyncFromPdb.ValueBool(),
 		Port:                    port,
-		BgpsessionPassword:      stringPtrOrNil(m.BgpsessionPassword),
+		BgpsessionPassword:      stringPtrOrNil(config.BgpsessionPassword),
 		PurchaseReference:       stringPtrOrNil(m.PurchaseReference),
 	}
 	if !m.AggregatedBilling.IsNull() {
