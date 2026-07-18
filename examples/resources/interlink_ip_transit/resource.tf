@@ -1,6 +1,6 @@
 # Manage an IP Transit service delivered on a newly provisioned port.
 resource "interlink_ip_transit" "example" {
-  bgpsession_asn             = 64500 # your public AS number
+  bgpsession_asn             = 64000 # replace with your own PUBLIC AS number (documentation/private ranges are rejected)
   bgpsession_as_set          = "AS-EXAMPLE"
   bgpsession_password        = var.bgp_password # sensitive; write-only
   bgpsession_prefix_limit_v4 = 1000

@@ -21,7 +21,7 @@ import (
 )
 
 // Enum values accepted by the resource, derived from the generated client
-// types. GRE Tunnel is intentionally excluded from the port types — IP Transit
+// types. GRE Tunnel is intentionally excluded from the port types. IP Transit
 // over GRE is out of scope for this resource.
 var nonGREPortTypes = []string{
 	string(portal.N100GCUSTOMQSFP28),
@@ -75,7 +75,7 @@ type ipTransitResourceModel struct {
 	OutboundAdvertisement types.String `tfsdk:"outbound_advertisement"`
 	PurchaseReference     types.String `tfsdk:"purchase_reference"`
 
-	// Port union — exactly one of these blocks is set. Modelled as
+	// Port union: exactly one of these blocks is set. Modelled as
 	// at-most-one-element lists (ListNestedBlock) so required inner
 	// attributes are enforced only when the block is present.
 	NewPort      []newPortModel      `tfsdk:"new_port"`
@@ -206,7 +206,7 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 	}
 
 	resp.Schema = schema.Schema{
-		Description: "Manages an Inter.link IP Transit service. Note: this service cannot be cancelled through the API — `terraform destroy` will fail by design (see the delete behaviour). Use `terraform state rm` to stop managing it without cancelling.",
+		Description: "Manages an Inter.link IP Transit service. Creating the resource submits the order and returns immediately with the service at status `DraftQuote`. The order is placed but the service is not provisioned yet; provisioning continues asynchronously out of band, and `status` advances (towards `Live`) and catches up on later refreshes. In-place updates are not supported in this release; attributes cannot be changed after creation. Note: this service cannot be cancelled through the API, so `terraform destroy` will fail by design (see the delete behaviour). Use `terraform state rm` to stop managing it without cancelling.",
 		Attributes: map[string]schema.Attribute{
 			// Required create arguments.
 			"bgpsession_asn": schema.Int64Attribute{
@@ -247,14 +247,14 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 				PlanModifiers: []planmodifier.Int64{immutableInt64()},
 			},
 			"sync_from_pdb": schema.BoolAttribute{
-				Description: "Whether to sync the BGP configuration from PeeringDB. Write-only — supplied on create and never stored in state.",
+				Description: "Whether to sync the BGP configuration from PeeringDB. Write-only: supplied on create and never stored in state.",
 				Required:    true,
 				WriteOnly:   true,
 			},
 
 			// Optional create arguments.
 			"bgpsession_password": schema.StringAttribute{
-				Description: "BGP session password (MD5). Required by the API. Write-only — supplied on create and never stored in state or read back.",
+				Description: "BGP session password (MD5). Required by the API. Write-only: supplied on create and never stored in state or read back.",
 				Required:    true,
 				Sensitive:   true,
 				WriteOnly:   true,
@@ -278,7 +278,7 @@ func (r *ipTransitResource) Schema(ctx context.Context, req resource.SchemaReque
 
 			// Computed read-back attributes.
 			"id": schema.Int64Attribute{
-				Description: "Numeric service ID. Primary identifier used for read, update, and import.",
+				Description: "Numeric service ID and primary identifier for the service.",
 				Computed:    true,
 			},
 			"sid": schema.StringAttribute{
@@ -466,8 +466,10 @@ func (r *ipTransitResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 func (r *ipTransitResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	resp.Diagnostics.AddError(
-		"Not implemented",
-		"Update for interlink_ip_transit is implemented in a later step (17d).",
+		"In-place updates are not supported",
+		"The interlink_ip_transit resource does not support in-place updates in this release. "+
+			"Changes to mutable attributes (bandwidth, vlan_id, vlan_type) are not yet available; "+
+			"revert them to their previous values.",
 	)
 }
 

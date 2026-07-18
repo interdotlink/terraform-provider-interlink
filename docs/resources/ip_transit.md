@@ -3,19 +3,19 @@
 page_title: "interlink_ip_transit Resource - interlink"
 subcategory: ""
 description: |-
-  Manages an Inter.link IP Transit service. Note: this service cannot be cancelled through the API — terraform destroy will fail by design (see the delete behaviour). Use terraform state rm to stop managing it without cancelling.
+  Manages an Inter.link IP Transit service. Creating the resource submits the order and returns immediately with the service at status DraftQuote. The order is placed but the service is not provisioned yet; provisioning continues asynchronously out of band, and status advances (towards Live) and catches up on later refreshes. In-place updates are not supported in this release; attributes cannot be changed after creation. Note: this service cannot be cancelled through the API, so terraform destroy will fail by design (see the delete behaviour). Use terraform state rm to stop managing it without cancelling.
 ---
 
 # interlink_ip_transit (Resource)
 
-Manages an Inter.link IP Transit service. Note: this service cannot be cancelled through the API — `terraform destroy` will fail by design (see the delete behaviour). Use `terraform state rm` to stop managing it without cancelling.
+Manages an Inter.link IP Transit service. Creating the resource submits the order and returns immediately with the service at status `DraftQuote`. The order is placed but the service is not provisioned yet; provisioning continues asynchronously out of band, and `status` advances (towards `Live`) and catches up on later refreshes. In-place updates are not supported in this release; attributes cannot be changed after creation. Note: this service cannot be cancelled through the API, so `terraform destroy` will fail by design (see the delete behaviour). Use `terraform state rm` to stop managing it without cancelling.
 
 ## Example Usage
 
 ```terraform
 # Manage an IP Transit service delivered on a newly provisioned port.
 resource "interlink_ip_transit" "example" {
-  bgpsession_asn             = 64500 # your public AS number
+  bgpsession_asn             = 64000 # replace with your own PUBLIC AS number (documentation/private ranges are rejected)
   bgpsession_as_set          = "AS-EXAMPLE"
   bgpsession_password        = var.bgp_password # sensitive; write-only
   bgpsession_prefix_limit_v4 = 1000
@@ -61,12 +61,12 @@ resource "interlink_ip_transit" "example" {
 
 - `bgpsession_as_set` (String) AS-SET name according to RFC2622.
 - `bgpsession_asn` (Number) Customer BGP autonomous system number, in the range 1-4294967295.
-- `bgpsession_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) BGP session password (MD5). Required by the API. Write-only — supplied on create and never stored in state or read back.
+- `bgpsession_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) BGP session password (MD5). Required by the API. Write-only: supplied on create and never stored in state or read back.
 - `bgpsession_prefix_limit_v4` (Number) IPv4 prefix limit, in the range 0-140000.
 - `bgpsession_prefix_limit_v6` (Number) IPv6 prefix limit, in the range 0-70000.
 - `prefix_v4_size` (Number) Requested IPv4 prefix size (CIDR length): `30` or `31`.
 - `prefix_v6_size` (Number) Requested IPv6 prefix size (CIDR length): `126` or `127`.
-- `sync_from_pdb` (Boolean, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Whether to sync the BGP configuration from PeeringDB. Write-only — supplied on create and never stored in state.
+- `sync_from_pdb` (Boolean, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Whether to sync the BGP configuration from PeeringDB. Write-only: supplied on create and never stored in state.
 - `term` (Number) Contract term in months.
 
 ### Optional
@@ -82,7 +82,7 @@ resource "interlink_ip_transit" "example" {
 
 - `customer_gid` (String) Customer global ID that owns the service.
 - `end_date` (String) Contract end date. Answers when the service can be cancelled without early-termination charges.
-- `id` (Number) Numeric service ID. Primary identifier used for read, update, and import.
+- `id` (Number) Numeric service ID and primary identifier for the service.
 - `name` (String) Service name.
 - `notice_period` (Number) Cancellation notice period in days.
 - `renewal_period` (Number) Automatic renewal period in months.
