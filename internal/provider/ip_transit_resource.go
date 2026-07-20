@@ -456,9 +456,14 @@ func (r *ipTransitResource) Read(ctx context.Context, req resource.ReadRequest, 
 		resp.Diagnostics.AddError("Unable to decode Inter.link IP Transit service", err.Error())
 		return
 	}
-	// Only the computed read-back attributes are refreshed from the API; the
-	// create arguments and the port block stay config-authoritative. (The VLAN
-	// round-trip into the port block is added with Import in a later step.)
+	// On import, ImportState sets only `id`, so the create arguments and the port
+	// block are absent from state; reconstruct them from the response. On a
+	// normal refresh the port block is already set and stays config-authoritative
+	// (the port union shape must not flip on read, which would be a permadiff).
+	if len(m.NewPort) == 0 && len(m.ExistingPort) == 0 && len(m.ExistingLag) == 0 {
+		reconstructImport(&m, s)
+	}
+	// The computed read-back attributes are always refreshed from the API.
 	mapIPTransitComputed(&m, s)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &m)...)
@@ -488,6 +493,23 @@ func (r *ipTransitResource) Delete(ctx context.Context, req resource.DeleteReque
 			"To stop managing this service with Terraform without cancelling it, run "+
 			"`terraform state rm` on this resource. To actually cancel it, contact Inter.link.",
 	)
+}
+
+// ImportState adopts an existing IP Transit service into Terraform state by its
+// numeric service ID. Only `id` is set here; the framework then calls Read,
+// which reconstructs the create arguments and the port block from the API
+// response (see reconstructImport). The port always imports as existing_port,
+// so an imported service must be configured with an existing_port block.
+func (r *ipTransitResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	id, err := strconv.ParseInt(req.ID, 10, 64)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Invalid import ID",
+			fmt.Sprintf("Expected the numeric IP Transit service ID, got %q: %s", req.ID, err),
+		)
+		return
+	}
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
 // toCreatePort builds the port union for the create body from whichever port
@@ -545,6 +567,51 @@ func mapIPTransitComputed(m *ipTransitResourceModel, s portal.IPTransit) {
 	}
 	m.NoticePeriod = optionalInt(s.NoticePeriod)
 	m.RenewalPeriod = optionalInt(s.RenewalPeriod)
+}
+
+// reconstructImport rebuilds the create arguments and the port block from an
+// IPTransit read response, for import only. The required create args are nested
+// in the bgpsession/prefix components, not at the top level. The port always
+// reconstructs as existing_port because the service's port already exists,
+// whatever shape originally created it. The write-only args (bgpsession_password,
+// sync_from_pdb) are never returned and stay null, which is correct: write-only
+// values are not compared on plan, so they do not cause an import diff. Optional
+// args (outbound_advertisement, aggregated_billing, purchase_reference) are left
+// unset; an imported config should omit them.
+func reconstructImport(m *ipTransitResourceModel, s portal.IPTransit) {
+	if s.BgpsessionV4 != nil {
+		m.BgpsessionAsn = optionalInt(s.BgpsessionV4.BgpsessionAsn)
+		m.BgpsessionAsSet = optionalString(s.BgpsessionV4.BgpsessionAsSet)
+		m.BgpsessionPrefixLimitV4 = optionalInt(s.BgpsessionV4.BgpsessionPrefixLimit)
+	}
+	if s.BgpsessionV6 != nil {
+		m.BgpsessionPrefixLimitV6 = optionalInt(s.BgpsessionV6.BgpsessionPrefixLimit)
+	}
+	if s.PrefixV4 != nil {
+		m.PrefixV4Size = optionalInt(s.PrefixV4.PrefixSize)
+	}
+	if s.PrefixV6 != nil {
+		m.PrefixV6Size = optionalInt(s.PrefixV6.PrefixSize)
+	}
+	m.Term = types.Int64Value(int64(s.Term))
+
+	// The port always imports as existing_port. bandwidth is the effective CDR
+	// (service_speed). VLAN is returned at the top level and mapped back in here.
+	ep := existingPortModel{
+		Bandwidth: optionalInt(s.ServiceSpeed),
+		VlanId:    types.Int64Null(),
+		VlanType:  types.StringNull(),
+	}
+	if s.Port != nil {
+		ep.Id = types.Int64Value(int64(s.Port.Id))
+	}
+	if s.Vlan != nil {
+		ep.VlanId = optionalInt(s.Vlan.VlanId)
+		if s.Vlan.VlanType != nil {
+			ep.VlanType = types.StringValue(string(*s.Vlan.VlanType))
+		}
+	}
+	m.ExistingPort = []existingPortModel{ep}
 }
 
 // int64PtrOrNil / stringPtrOrNil / vlanTypePtr convert a known framework value
