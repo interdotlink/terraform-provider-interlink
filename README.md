@@ -24,7 +24,7 @@ provider "interlink" {
 
 ## Resources and data sources
 
-- Resource `interlink_ip_transit`: manages an IP Transit service. `terraform apply` submits the order and returns immediately with the service at status `DraftQuote`; the service is **not provisioned yet**, and advances asynchronously as `status` catches up on later refreshes. Supports create and read; attributes are immutable after creation, and `terraform destroy` is refused by design (cancellation is a contractual action, never automatic).
+- Resource `interlink_ip_transit`: manages an IP Transit service. `terraform apply` submits the order and returns immediately with the service at status `DraftQuote`; the service is **not provisioned yet**, and advances asynchronously as `status` catches up on later refreshes. Supports create, read, and import; attributes are immutable after creation, and `terraform destroy` is refused by design (cancellation is a contractual action, never automatic). Import by numeric service ID (`terraform import interlink_ip_transit.example 11`). On import the port is always reconstructed as an `existing_port` block, so configure the imported service accordingly.
 - Data sources: `interlink_status`, `interlink_products`, `interlink_locations`, `interlink_projects`, `interlink_services`, and the per-family `interlink_ip_services`, `interlink_ddos_services`, `interlink_port_services`, `interlink_elan_services`, `interlink_flexpeer_services`.
 
 See the [registry documentation](https://registry.terraform.io/providers/interdotlink/interlink/latest/docs) for full schemas and examples.
