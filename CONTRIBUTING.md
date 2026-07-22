@@ -21,7 +21,7 @@ Please run `gofmt` and `go vet ./...` before submitting.
 
 Two parts of the repo are generated. Never edit them by hand; change the source and regenerate instead:
 
-- **`internal/portal/`** is the Portal API client, generated from the OpenAPI spec:
+- **`internal/portal/`** is the Portal API client, generated from the OpenAPI spec (browsable at the [Portal API docs](https://portal.inter.link/api/v1/docs)):
 
   ```sh
   cd internal/portal && oapi-codegen -config config.yaml openapi.json
