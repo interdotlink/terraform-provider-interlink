@@ -1,6 +1,6 @@
 # terraform-provider-interlink
 
-Terraform/OpenTofu provider for the [Inter.link](https://inter.link) Portal API.
+Terraform/OpenTofu provider for the [Inter.link](https://inter.link) [Portal API](https://portal.inter.link/api/v1/docs).
 
 ## Requirements
 
